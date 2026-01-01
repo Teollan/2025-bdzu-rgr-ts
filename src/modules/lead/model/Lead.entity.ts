@@ -1,9 +1,9 @@
 export enum LeadStatus {
-  Pending = "PENDING",
-  InProgress = "IN_PROGRESS",
-  Won = "WON",
-  Lost = "LOST",
-}
+  Pending = "pending",
+  InProgress = "in-progress",
+  Won = "won",
+  Lost = "lost",
+};
 
 export interface Lead {
   id: number;

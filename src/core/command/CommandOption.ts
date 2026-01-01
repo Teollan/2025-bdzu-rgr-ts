@@ -100,7 +100,7 @@ export class CommandOption<T> {
     });
   }
 
-  public static date(config: BaseCommandOptionConfig<Date>): CommandOption<Date> {
+  public static timestamp(config: BaseCommandOptionConfig<Date>): CommandOption<Date> {
     return new CommandOption<Date>({
       ...config,
       parseFn: (input) => {
@@ -111,6 +111,24 @@ export class CommandOption<T> {
         }
 
         return parsed;
+      },
+    });
+  }
+
+  public static enum<T extends Record<string, string | number>>(
+    enumeration: T,
+    config: BaseCommandOptionConfig<T[keyof T]>,
+  ): CommandOption<T[keyof T]> {
+    return new CommandOption<T[keyof T]>({
+      ...config,
+      parseFn: (input) => {
+        const enumValues = Object.values(enumeration) as Array<T[keyof T]>;
+
+        if (!enumValues.includes(input as T[keyof T])) {
+          throw new Error(`Invalid enum value: ${input}`);
+        }
+
+        return input as T[keyof T];
       },
     });
   }

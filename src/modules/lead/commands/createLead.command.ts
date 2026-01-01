@@ -2,6 +2,7 @@ import { makeCommand } from "@/core/command";
 import { CommandOption } from "@/core/command/CommandOption";
 import { CommandOptionSchema } from "@/core/command/CommandOptionSchema";
 import { CreateLeadController } from "@/modules/lead/controllers";
+import { LeadStatus } from '@/modules/lead/model';
 
 export const createLeadCommand = makeCommand({
   name: "create",
@@ -18,7 +19,7 @@ export const createLeadCommand = makeCommand({
       description: "The customer ID",
       isRequired: true,
     }),
-    status: CommandOption.string({
+    status: CommandOption.enum(LeadStatus, {
       alias: "status",
       description: "The status",
       isRequired: true,
