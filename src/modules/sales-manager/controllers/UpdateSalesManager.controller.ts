@@ -1,5 +1,6 @@
 import { Controller } from "@/core/controller";
 import { SalesManagerRepository } from "@/modules/sales-manager/model";
+import { showSalesManager } from '@/modules/sales-manager/view';
 
 export interface UpdateSalesManagerArgs {
   id: number;
@@ -13,14 +14,10 @@ type Args = UpdateSalesManagerArgs;
 export class UpdateSalesManagerController extends Controller<Args> {
   private repository = new SalesManagerRepository();
 
-  async run(args: Args): Promise<void> {
-    const salesManager = await this.repository.updateSalesManager(
-      args.id,
-      args.companyId,
-      args.firstName,
-      args.lastName
-    );
+  async run({ id, ...updates }: Args): Promise<void> {
+    const salesManager = await this.repository.updateSalesManager(id, updates);
 
     console.log(`Sales manager ${salesManager.id} updated successfully`);
+    showSalesManager(salesManager);
   }
 }

@@ -11,11 +11,11 @@ type Args = ReadOneCompanyArgs;
 export class ReadOneCompanyController extends Controller<Args> {
   private repository = new CompanyRepository();
 
-  async run(args: Args): Promise<void> {
-    const company = await this.repository.findCompanyById(args.id);
+  async run({ id}: Args): Promise<void> {
+    const company = await this.repository.findCompanyById(id);
 
     if (!company) {
-      console.log(`Company with id ${args.id} not found.`);
+      console.log(`Company with id ${id} not found.`);
       
       return;
     }

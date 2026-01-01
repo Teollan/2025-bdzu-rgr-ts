@@ -1,5 +1,6 @@
 import { Controller } from "@/core/controller";
 import { CustomerRepository } from "@/modules/customer/model";
+import { showCustomer } from '@/modules/customer/view';
 
 export interface DeleteCustomerArgs {
   id: number;
@@ -14,5 +15,6 @@ export class DeleteCustomerController extends Controller<Args> {
     const customer = await this.repository.deleteCustomer(args.id);
 
     console.log(`Customer ${customer.id} deleted successfully`);
+    showCustomer(customer);
   }
 }

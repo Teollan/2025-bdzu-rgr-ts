@@ -1,20 +1,18 @@
-import { Repository } from "@/core/repository";
-import { Lead } from "@/modules/lead/model/Lead.entity.ts";
+import { PaginationParams, Repository } from "@/core/repository";
+import { CreateLeadFields, Lead, UpdateLeadFields } from "@/modules/lead/model/Lead.entity.ts";
 
 export class LeadRepository extends Repository {
-  private toEntity(row: Record<string, unknown>): Lead {
-    return {
-      id: row.id as number,
-      companyId: row.company_id as number,
-      customerId: row.customer_id as number,
-      status: row.status as string,
-      createdAt: row.created_at as Date,
-    };
-  }
+  private lead = `
+    id,
+    company_id AS "companyId",
+    customer_id AS "customerId",
+    status,
+    created_at AS "createdAt"
+  `;
 
   async findLeadById(id: number): Promise<Lead | null> {
-    const result = await this.db`
-      SELECT *
+    const result = await this.db.query<Lead>`
+      SELECT ${this.lead}
       FROM leads
       WHERE id = ${id};
     `;
@@ -23,63 +21,68 @@ export class LeadRepository extends Repository {
       return null;
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
-  async getAllLeads(limit: number = 20, offset: number = 0): Promise<Lead[]> {
-    const result = await this.db`
-      SELECT *
+  async getAllLeads({
+    limit = 20,
+    offset = 0,
+  }: PaginationParams): Promise<Lead[]> {
+    const result = await this.db.query<Lead>`
+      SELECT ${this.lead}
       FROM leads
       LIMIT ${limit}
       OFFSET ${offset};
     `;
 
-    return result.map((row) => this.toEntity(row));
+    return result;
   }
 
-  async createLead(companyId: number, customerId: number, status: string): Promise<Lead> {
-    const result = await this.db`
+  async createLead({
+    companyId,
+    customerId,
+    status
+  }: CreateLeadFields): Promise<Lead> {
+    const result = await this.db.query<Lead>`
       INSERT INTO leads (company_id, customer_id, status, created_at)
       VALUES (${companyId}, ${customerId}, ${status}, NOW())
-      RETURNING *;
+      RETURNING ${this.lead};
     `;
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
   async updateLead(
     id: number,
-    companyId?: number,
-    customerId?: number,
-    status?: string
+    fields: UpdateLeadFields,
   ): Promise<Lead> {
-    const result = await this.db`
+    const result = await this.db.query<Lead>`
       UPDATE leads
-      SET company_id = COALESCE(${companyId ?? null}, company_id),
-          customer_id = COALESCE(${customerId ?? null}, customer_id),
-          status = COALESCE(${status ?? null}, status)
+      SET ${this.safeSet('company_id', fields.companyId)},
+          ${this.safeSet('customer_id', fields.customerId)},
+          ${this.safeSet('status', fields.status)}
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING ${this.lead};
     `;
 
     if (result.length === 0) {
       throw new Error(`Lead with id ${id} not found`);
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
   async deleteLead(id: number): Promise<Lead> {
-    const result = await this.db`
+    const result = await this.db.query<Lead>`
       DELETE FROM leads
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING ${this.lead};
     `;
 
     if (result.length === 0) {
       throw new Error(`Lead with id ${id} not found`);
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 }

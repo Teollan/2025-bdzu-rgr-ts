@@ -1,5 +1,6 @@
 import { Controller } from "@/core/controller";
 import { CompanyRepository } from "@/modules/company/model";
+import { showCompany } from '@/modules/company/view';
 
 export interface DeleteCompanyArgs {
   id: number;
@@ -14,5 +15,6 @@ export class DeleteCompanyController extends Controller<Args> {
     const company = await this.repository.deleteCompany(args.id);
     
     console.log(`Company ${company.id} deleted successfully`);
+    showCompany(company);
   }
 }

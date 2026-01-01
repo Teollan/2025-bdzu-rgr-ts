@@ -4,3 +4,7 @@ export interface SalesManager {
   firstName: string;
   lastName: string;
 }
+
+export type UpdateSalesManagerFields = Partial<Omit<SalesManager, "id">>;
+
+export type CreateSalesManagerFields = Pick<SalesManager, "companyId" | "firstName" | "lastName">;

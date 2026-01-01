@@ -11,11 +11,11 @@ type Args = ReadOneLeadArgs;
 export class ReadOneLeadController extends Controller<Args> {
   private repository = new LeadRepository();
 
-  async run(args: Args): Promise<void> {
-    const lead = await this.repository.findLeadById(args.id);
+  async run({ id }: Args): Promise<void> {
+    const lead = await this.repository.findLeadById(id);
 
     if (!lead) {
-      console.log(`Lead with id ${args.id} not found.`);
+      console.log(`Lead with id ${id} not found.`);
 
       return;
     }

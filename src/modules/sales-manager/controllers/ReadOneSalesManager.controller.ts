@@ -11,11 +11,11 @@ type Args = ReadOneSalesManagerArgs;
 export class ReadOneSalesManagerController extends Controller<Args> {
   private repository = new SalesManagerRepository();
 
-  async run(args: Args): Promise<void> {
-    const salesManager = await this.repository.findSalesManagerById(args.id);
+  async run({ id }: Args): Promise<void> {
+    const salesManager = await this.repository.findSalesManagerById(id);
 
     if (!salesManager) {
-      console.log(`Sales manager with id ${args.id} not found.`);
+      console.log(`Sales manager with id ${id} not found.`);
 
       return;
     }

@@ -11,11 +11,11 @@ type Args = ReadOneCustomerArgs;
 export class ReadOneCustomerController extends Controller<Args> {
   private repository = new CustomerRepository();
 
-  async run(args: Args): Promise<void> {
-    const customer = await this.repository.findCustomerById(args.id);
+  async run({ id }: Args): Promise<void> {
+    const customer = await this.repository.findCustomerById(id);
 
     if (!customer) {
-      console.log(`Customer with id ${args.id} not found.`);
+      console.log(`Customer with id ${id} not found.`);
 
       return;
     }

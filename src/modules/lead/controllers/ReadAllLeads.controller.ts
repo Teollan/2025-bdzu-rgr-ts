@@ -13,7 +13,7 @@ export class ReadAllLeadsController extends Controller<Args> {
   private repository = new LeadRepository();
 
   async run(args: Args): Promise<void> {
-    const leads = await this.repository.getAllLeads(args.limit, args.offset);
+    const leads = await this.repository.getAllLeads(args);
 
     if (leads.length === 0) {
       console.log("No leads found.");

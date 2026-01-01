@@ -1,19 +1,17 @@
-import { Repository } from "@/core/repository";
-import { SalesManager } from "@/modules/sales-manager/model/SalesManager.entity.ts";
+import { PaginationParams, Repository } from "@/core/repository";
+import { CreateSalesManagerFields, SalesManager, UpdateSalesManagerFields } from "@/modules/sales-manager/model/SalesManager.entity.ts";
 
 export class SalesManagerRepository extends Repository {
-  private toEntity(row: Record<string, unknown>): SalesManager {
-    return {
-      id: row.id as number,
-      companyId: row.company_id as number,
-      firstName: row.first_name as string,
-      lastName: row.last_name as string,
-    };
-  }
+  private salesManager = `
+    id,
+    company_id AS "companyId",
+    first_name AS "firstName",
+    last_name AS "lastName"
+  `;
 
   async findSalesManagerById(id: number): Promise<SalesManager | null> {
-    const result = await this.db`
-      SELECT *
+    const result = await this.db.query<SalesManager>`
+      SELECT ${this.salesManager}
       FROM sales_managers
       WHERE id = ${id};
     `;
@@ -22,63 +20,68 @@ export class SalesManagerRepository extends Repository {
       return null;
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
-  async getAllSalesManagers(limit: number = 20, offset: number = 0): Promise<SalesManager[]> {
-    const result = await this.db`
-      SELECT *
+  async getAllSalesManagers({
+    limit = 20,
+    offset = 0,
+  }: PaginationParams): Promise<SalesManager[]> {
+    const result = await this.db.query<SalesManager>`
+      SELECT ${this.salesManager}
       FROM sales_managers
       LIMIT ${limit}
       OFFSET ${offset};
     `;
 
-    return result.map((row) => this.toEntity(row));
+    return result;
   }
 
-  async createSalesManager(companyId: number, firstName: string, lastName: string): Promise<SalesManager> {
-    const result = await this.db`
+  async createSalesManager({
+    companyId,
+    firstName,
+    lastName
+  }: CreateSalesManagerFields): Promise<SalesManager> {
+    const result = await this.db.query<SalesManager>`
       INSERT INTO sales_managers (company_id, first_name, last_name)
       VALUES (${companyId}, ${firstName}, ${lastName})
-      RETURNING *;
+      RETURNING ${this.salesManager};
     `;
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
   async updateSalesManager(
     id: number,
-    companyId?: number,
-    firstName?: string,
-    lastName?: string
+    fields: UpdateSalesManagerFields,
   ): Promise<SalesManager> {
-    const result = await this.db`
+    const result = await this.db.query<SalesManager>`
       UPDATE sales_managers
-      SET company_id = COALESCE(${companyId ?? null}, company_id),
-          first_name = COALESCE(${firstName ?? null}, first_name),
-          last_name = COALESCE(${lastName ?? null}, last_name)
+      SET ${this.safeSet('company_id', fields.companyId)},
+          ${this.safeSet('first_name', fields.firstName)},
+          ${this.safeSet('last_name', fields.lastName)}
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING ${this.salesManager};
     `;
 
     if (result.length === 0) {
       throw new Error(`Sales manager with id ${id} not found`);
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
   async deleteSalesManager(id: number): Promise<SalesManager> {
-    const result = await this.db`
+    const result = await this.db.query<SalesManager>`
       DELETE FROM sales_managers
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING ${this.salesManager};
     `;
 
     if (result.length === 0) {
       throw new Error(`Sales manager with id ${id} not found`);
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 }

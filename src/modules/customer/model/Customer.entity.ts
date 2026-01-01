@@ -5,3 +5,7 @@ export interface Customer {
   phoneNumber: string;
   email: string;
 }
+
+export type UpdateCustomerFields = Partial<Omit<Customer, "id">>;
+
+export type CreateCustomerFields = Pick<Customer, "firstName" | "lastName" | "phoneNumber" | "email">;

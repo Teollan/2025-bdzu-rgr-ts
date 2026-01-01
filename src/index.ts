@@ -1,26 +1,16 @@
 import { Command } from "commander";
-import { Environment } from "@/core/environment";
-import { connectDatabase } from "@/core/database";
 import { companiesCommand } from "@/modules/company";
 import { salesManagersCommand } from "@/modules/sales-manager";
 import { customersCommand } from "@/modules/customer";
 import { leadsCommand } from "@/modules/lead";
+import { makeAndConnectDatabase } from '@/core/database';
 
-async function main(): Promise<void> {
-  connectDatabase({
-    host: Environment.dbHost,
-    port: Environment.dbPort,
-    database: Environment.dbName,
-    username: Environment.dbUsername,
-    password: Environment.dbPassword,
-  });
+export const main = async (): Promise<void> => {
+  await makeAndConnectDatabase();
 
-  const program = new Command();
+  const program = new Command('rgr');
 
-  program
-    .name("rgr")
-    .description("A command-line CRM application")
-    .version("1.0.0");
+  program.description("A command-line CRM application");
 
   program.addCommand(companiesCommand);
   program.addCommand(salesManagersCommand);
@@ -31,8 +21,3 @@ async function main(): Promise<void> {
 
   process.exit(0);
 }
-
-main().catch((error) => {
-  console.error("An unexpected error occurred:", error);
-  process.exit(1);
-});

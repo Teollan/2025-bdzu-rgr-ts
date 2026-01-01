@@ -1,20 +1,18 @@
-import { Repository } from "@/core/repository";
-import { Customer } from "@/modules/customer/model/Customer.entity.ts";
+import { PaginationParams, Repository } from "@/core/repository";
+import { CreateCustomerFields, Customer, UpdateCustomerFields } from "@/modules/customer/model/Customer.entity.ts";
 
 export class CustomerRepository extends Repository {
-  private toEntity(row: Record<string, unknown>): Customer {
-    return {
-      id: row.id as number,
-      firstName: row.first_name as string,
-      lastName: row.last_name as string,
-      phoneNumber: row.phone_number as string,
-      email: row.email as string,
-    };
-  }
+  private customer = `
+    id,
+    first_name AS "firstName",
+    last_name AS "lastName",
+    phone_number AS "phoneNumber",
+    email
+  `
 
   async findCustomerById(id: number): Promise<Customer | null> {
-    const result = await this.db`
-      SELECT *
+    const result = await this.db.query<Customer>`
+      SELECT ${this.customer}
       FROM customers
       WHERE id = ${id};
     `;
@@ -23,70 +21,70 @@ export class CustomerRepository extends Repository {
       return null;
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
-  async getAllCustomers(limit: number = 20, offset: number = 0): Promise<Customer[]> {
-    const result = await this.db`
-      SELECT *
+  async getAllCustomers({
+    limit = 20,
+    offset = 0,
+  }: PaginationParams): Promise<Customer[]> {
+    const result = await this.db.query<Customer>`
+      SELECT ${this.customer}
       FROM customers
       LIMIT ${limit}
       OFFSET ${offset};
     `;
 
-    return result.map((row) => this.toEntity(row));
+    return result;
   }
 
-  async createCustomer(
-    firstName: string,
-    lastName: string,
-    phoneNumber: string,
-    email: string
-  ): Promise<Customer> {
-    const result = await this.db`
+  async createCustomer({
+    firstName,
+    lastName,
+    phoneNumber,
+    email
+  }: CreateCustomerFields): Promise<Customer> {
+    const result = await this.db.query<Customer>`
       INSERT INTO customers (first_name, last_name, phone_number, email)
       VALUES (${firstName}, ${lastName}, ${phoneNumber}, ${email})
-      RETURNING *;
+      RETURNING ${this.customer};
     `;
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
   async updateCustomer(
     id: number,
-    firstName?: string,
-    lastName?: string,
-    phoneNumber?: string,
-    email?: string
+    fields: UpdateCustomerFields,
   ): Promise<Customer> {
-    const result = await this.db`
+    const result = await this.db.query<Customer>`
       UPDATE customers
-      SET first_name = COALESCE(${firstName ?? null}, first_name),
-          last_name = COALESCE(${lastName ?? null}, last_name),
-          phone_number = COALESCE(${phoneNumber ?? null}, phone_number),
-          email = COALESCE(${email ?? null}, email)
+      SET ${this.safeSet('first_name', fields.firstName)},
+          ${this.safeSet('last_name', fields.lastName)},
+          ${this.safeSet('phone_number', fields.phoneNumber)},
+          ${this.safeSet('email', fields.email)}
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING ${this.customer};
     `;
 
     if (result.length === 0) {
       throw new Error(`Customer with id ${id} not found`);
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
   async deleteCustomer(id: number): Promise<Customer> {
-    const result = await this.db`
+    const result = await this.db.query<Customer>`
       DELETE FROM customers
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING ${this.customer};
     `;
 
     if (result.length === 0) {
       throw new Error(`Customer with id ${id} not found`);
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 }

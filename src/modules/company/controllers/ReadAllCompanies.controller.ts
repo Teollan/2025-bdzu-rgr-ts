@@ -13,7 +13,7 @@ export class ReadAllCompaniesController extends Controller<Args> {
   private repository = new CompanyRepository();
 
   async run(args: Args): Promise<void> {
-    const companies = await this.repository.getAllCompanies(args.limit, args.offset);
+    const companies = await this.repository.getAllCompanies(args);
 
     if (companies.length === 0) {
       console.log("No companies found.");

@@ -11,11 +11,11 @@ type Args = FindCompaniesByNameArgs;
 export class FindCompaniesByNameController extends Controller<Args> {
   private repository = new CompanyRepository();
 
-  async run(args: Args): Promise<void> {
-    const companies = await this.repository.findCompaniesByName(args.name);
+  async run({ name }: Args): Promise<void> {
+    const companies = await this.repository.findCompaniesByName(name);
 
     if (companies.length === 0) {
-      console.log(`No companies found with name containing "${args.name}".`);
+      console.log(`No companies found with name containing "${name}".`);
 
       return;
     }

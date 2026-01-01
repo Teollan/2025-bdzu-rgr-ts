@@ -13,7 +13,7 @@ export class ReadAllSalesManagersController extends Controller<Args> {
   private repository = new SalesManagerRepository();
 
   async run(args: Args): Promise<void> {
-    const salesManagers = await this.repository.getAllSalesManagers(args.limit, args.offset);
+    const salesManagers = await this.repository.getAllSalesManagers(args);
 
     if (salesManagers.length === 0) {
       console.log("No sales managers found.");

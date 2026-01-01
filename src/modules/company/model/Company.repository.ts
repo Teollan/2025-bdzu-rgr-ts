@@ -1,17 +1,15 @@
-import { Repository } from "@/core/repository";
-import { Company } from "@/modules/company/model/Company.entity.ts";
+import { PaginationParams, Repository } from "@/core/repository";
+import { Company, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/model/Company.entity.ts";
 
 export class CompanyRepository extends Repository {
-  private toEntity(row: Record<string, unknown>): Company {
-    return {
-      id: row.id as number,
-      name: row.name as string,
-    };
-  }
+  private company = `
+    id,
+    name
+  `
 
   async findCompanyById(id: number): Promise<Company | null> {
-    const result = await this.db`
-      SELECT *
+    const result = await this.db.query<Company>`
+      SELECT ${this.company}
       FROM companies
       WHERE id = ${id};
     `;
@@ -20,66 +18,74 @@ export class CompanyRepository extends Repository {
       return null;
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
   async findCompaniesByName(name: string): Promise<Company[]> {
-    const result = await this.db`
-      SELECT *
+    const result = await this.db.query<Company>`
+      SELECT ${this.company}
       FROM companies
-      WHERE name ILIKE ${"%" + name + "%"};
+      WHERE name ILIKE '%${name}%';
     `;
 
-    return result.map((row) => this.toEntity(row));
+    return result;
   }
 
-  async getAllCompanies(limit: number = 20, offset: number = 0): Promise<Company[]> {
-    const result = await this.db`
-      SELECT *
+  async getAllCompanies({
+    limit = 20,
+    offset = 0,
+  }: PaginationParams): Promise<Company[]> {
+    const result = await this.db.query<Company>`
+      SELECT ${this.company}
       FROM companies
       LIMIT ${limit}
       OFFSET ${offset};
     `;
 
-    return result.map((row) => this.toEntity(row));
+    return result;
   }
 
-  async createCompany(name: string): Promise<Company> {
-    const result = await this.db`
+  async createCompany({
+    name
+  }: CreateCompanyFields): Promise<Company> {
+    const result = await this.db.query<Company>`
       INSERT INTO companies (name)
       VALUES (${name})
-      RETURNING *;
+      RETURNING ${this.company};
     `;
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
-  async updateCompany(id: number, name?: string): Promise<Company> {
-    const result = await this.db`
+  async updateCompany(
+    id: number,
+    fields: UpdateCompanyFields,
+  ): Promise<Company> {
+    const result = await this.db.query<Company>`
       UPDATE companies
-      SET name = COALESCE(${name ?? null}, name)
+      SET ${this.safeSet('name', fields.name)}
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING ${this.company};
     `;
 
     if (result.length === 0) {
       throw new Error(`Company with id ${id} not found`);
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 
   async deleteCompany(id: number): Promise<Company> {
-    const result = await this.db`
+    const result = await this.db.query<Company>`
       DELETE FROM companies
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING ${this.company};
     `;
 
     if (result.length === 0) {
       throw new Error(`Company with id ${id} not found`);
     }
 
-    return this.toEntity(result[0]);
+    return result[0];
   }
 }
