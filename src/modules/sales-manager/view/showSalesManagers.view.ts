@@ -1,4 +1,4 @@
-import { Table } from "@/core/output";
+import { Table } from "@/modules/UI/view/Table";
 import { SalesManager } from "@/modules/sales-manager/model";
 
 export function showSalesManagers(salesManagers: SalesManager[]): void {

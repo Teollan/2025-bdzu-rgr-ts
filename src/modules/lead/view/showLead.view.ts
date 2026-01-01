@@ -1,4 +1,4 @@
-import { ColumnValueTable } from "@/core/output";
+import { ColumnValueTable } from "@/modules/UI/view/Table";
 import { Lead } from "@/modules/lead/model";
 
 export function showLead(lead: Lead): void {

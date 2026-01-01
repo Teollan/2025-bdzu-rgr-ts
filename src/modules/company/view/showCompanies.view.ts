@@ -1,4 +1,4 @@
-import { Table } from "@/core/output";
+import { Table } from "@/modules/UI/view/Table";
 import { Company } from "@/modules/company/model";
 
 export function showCompanies(companies: Company[]): void {

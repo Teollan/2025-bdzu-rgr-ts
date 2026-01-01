@@ -1,4 +1,4 @@
-import { Table } from "@/core/output";
+import { Table } from "@/modules/UI/view/Table";
 import { Lead } from "@/modules/lead/model";
 
 export function showLeads(leads: Lead[]): void {

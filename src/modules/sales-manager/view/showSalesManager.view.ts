@@ -1,4 +1,4 @@
-import { ColumnValueTable } from "@/core/output";
+import { ColumnValueTable } from "@/modules/UI/view/Table";
 import { SalesManager } from "@/modules/sales-manager/model";
 
 export function showSalesManager(salesManager: SalesManager): void {
