@@ -1,0 +1,9 @@
+# IDE
+.claude
+.vscode
+
+# Node.js
+node_modules
+
+# Env
+.env
