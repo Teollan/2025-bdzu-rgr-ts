@@ -1,20 +1,21 @@
-import { Database, DatabaseConnectionParams } from "@/core/database/database";
+import { Environment } from '@/core/environment';
 import postgres, { type Sql } from "postgres";
 
-export class Postgres implements Database {
+export class Postgres {
   private static instance: Sql | null = null;
 
-  public async connect(params: DatabaseConnectionParams): Promise<void> {
+  static async connect(): Promise<void> {
     Postgres.instance = postgres({
-      host: params.host,
-      port: params.port,
-      database: params.database,
-      username: params.username,
-      password: params.password,
+      host: Environment.dbHost,
+      port: Environment.dbPort,
+      database: Environment.dbName,
+      username: Environment.dbUsername,
+      password: Environment.dbPassword,
+      transform: postgres.camel,
     });
   }
 
-  public async disconnect(): Promise<void> {
+  static async disconnect(): Promise<void> {
     if (Postgres.instance) {
       await Postgres.instance.end();
 
@@ -22,17 +23,11 @@ export class Postgres implements Database {
     }
   }
 
-  public async query<T extends object>(
-    strings: TemplateStringsArray,
-    ...values: unknown[]
-  ): Promise<T[]> {
+  static get sql(): Sql {
     if (!Postgres.instance) {
-      throw new Error("Database not connected. Call connect() first.");
+      throw new Error("Database not connected. Call Postgres.connect() first.");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await (Postgres.instance as any)(strings, ...values);
-
-    return result as T[];
+    return Postgres.instance;
   }
 }

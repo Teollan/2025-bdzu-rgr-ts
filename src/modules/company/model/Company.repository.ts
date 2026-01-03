@@ -2,16 +2,11 @@ import { PaginationParams, Repository } from "@/core/repository";
 import { Company, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/model/Company.entity.ts";
 
 export class CompanyRepository extends Repository {
-  private company = `
-    id,
-    name
-  `
-
   async findCompanyById(id: number): Promise<Company | null> {
-    const result = await this.db.query<Company>`
-      SELECT ${this.company}
+    const result = await this.sql<Company[]>`
+      SELECT *
       FROM companies
-      WHERE id = ${id};
+      WHERE id = ${id}
     `;
 
     if (result.length === 0) {
@@ -22,36 +17,34 @@ export class CompanyRepository extends Repository {
   }
 
   async findCompaniesByName(name: string): Promise<Company[]> {
-    const result = await this.db.query<Company>`
-      SELECT ${this.company}
-      FROM companies
-      WHERE name ILIKE '%${name}%';
-    `;
+    const pattern = `%${name}%`;
 
-    return result;
+    return this.sql<Company[]>`
+      SELECT *
+      FROM companies
+      WHERE name ILIKE ${pattern}
+    `;
   }
 
   async getAllCompanies({
     limit = 20,
     offset = 0,
   }: PaginationParams): Promise<Company[]> {
-    const result = await this.db.query<Company>`
-      SELECT ${this.company}
+    return this.sql<Company[]>`
+      SELECT *
       FROM companies
       LIMIT ${limit}
-      OFFSET ${offset};
+      OFFSET ${offset}
     `;
-
-    return result;
   }
 
   async createCompany({
     name
   }: CreateCompanyFields): Promise<Company> {
-    const result = await this.db.query<Company>`
+    const result = await this.sql<Company[]>`
       INSERT INTO companies (name)
       VALUES (${name})
-      RETURNING ${this.company};
+      RETURNING *
     `;
 
     return result[0];
@@ -61,11 +54,11 @@ export class CompanyRepository extends Repository {
     id: number,
     fields: UpdateCompanyFields,
   ): Promise<Company> {
-    const result = await this.db.query<Company>`
+    const result = await this.sql<Company[]>`
       UPDATE companies
-      SET ${this.safeSet('name', fields.name)}
+      SET ${this.updates(fields)}
       WHERE id = ${id}
-      RETURNING ${this.company};
+      RETURNING *
     `;
 
     if (result.length === 0) {
@@ -76,10 +69,11 @@ export class CompanyRepository extends Repository {
   }
 
   async deleteCompany(id: number): Promise<Company> {
-    const result = await this.db.query<Company>`
-      DELETE FROM companies
+    const result = await this.sql<Company[]>`
+      DELETE
+      FROM companies
       WHERE id = ${id}
-      RETURNING ${this.company};
+      RETURNING *
     `;
 
     if (result.length === 0) {

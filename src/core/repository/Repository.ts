@@ -1,12 +1,19 @@
-import { Database, makeDatabase } from '@/core/database';
+import { Postgres } from '@/core/database';
+import { defined } from '@/lib/functional';
+import type { Sql } from 'postgres';
 
 export abstract class Repository {
-  protected db: Database = makeDatabase();
+  protected get sql(): Sql {
+    return Postgres.sql;
+  }
 
-  protected safeSet(
-    field: string,
-    value: Date | string | number | boolean | null | undefined,
-  ): string {
-    return `${field} = COALESCE(${value ?? null}, ${field})`;
+  protected updates(input: Record<string, unknown>) {
+    const entries = Object.entries(input);
+
+    const definedEntries = entries.filter(([_, value]) => defined(value));
+
+    const updates = Object.fromEntries(definedEntries);
+
+    return this.sql(updates);
   }
 }

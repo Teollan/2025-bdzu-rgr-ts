@@ -1,8 +1,8 @@
-import { makeAndConnectDatabase } from '@/core/database';
+import { Postgres } from '@/core/database';
 import { Program } from '@/core/program/Program';
 
 export const main = async (): Promise<void> => {
-  const db = await makeAndConnectDatabase();
+  await Postgres.connect();
 
   const program = new Program();
 
@@ -34,7 +34,7 @@ export const main = async (): Promise<void> => {
 
   console.log('Exiting application...');
 
-  await db.disconnect();
+  await Postgres.disconnect();
 
   process.exit(0);
 }
