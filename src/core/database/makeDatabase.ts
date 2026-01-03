@@ -1,5 +1,5 @@
 import { Database } from "@/core/database/database";
-import { PostgresDatabase } from "@/core/database/postgres";
+import { Postgres } from "@/core/database/postgres";
 import { Environment } from '@/core/environment';
 
 export const makeAndConnectDatabase = async (): Promise<Database> => {
@@ -17,5 +17,5 @@ export const makeAndConnectDatabase = async (): Promise<Database> => {
 };
 
 export const makeDatabase = (): Database => {
-  return new PostgresDatabase();
+  return new Postgres();
 }

@@ -1,23 +1,42 @@
-import { Command } from "commander";
-import { companiesCommand } from "@/modules/company";
-import { salesManagersCommand } from "@/modules/sales-manager";
-import { customersCommand } from "@/modules/customer";
-import { leadsCommand } from "@/modules/lead";
 import { makeAndConnectDatabase } from '@/core/database';
+import { Program } from '@/core/program/Program';
 
 export const main = async (): Promise<void> => {
-  await makeAndConnectDatabase();
+  const db = await makeAndConnectDatabase();
 
-  const program = new Command('rgr');
+  const program = new Program();
 
-  program.description("A command-line CRM application");
+  console.log('Welcome to the CRM application!');
+  console.log('Type your commands below (type "exit" to quit).');
+  console.log('Try using "help" to see available commands and how to use them.');
 
-  program.addCommand(companiesCommand);
-  program.addCommand(salesManagersCommand);
-  program.addCommand(customersCommand);
-  program.addCommand(leadsCommand);
+  while (true) {
+    const input = await program.read();
 
-  await program.parseAsync(process.argv);
+    if (!input) {
+      continue;
+    }
+
+    if (input.toLowerCase() === 'exit') {
+      break;
+    }
+
+    try {
+      await program.evaluate(input);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`Error: ${error.message}`);
+      } else {
+        console.error(`An unknown error occurred: ${error}`);
+      }
+    }
+  }
+
+  console.log('Exiting application...');
+
+  await db.disconnect();
 
   process.exit(0);
 }
+
+main()

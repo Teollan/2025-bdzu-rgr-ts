@@ -1,11 +1,11 @@
 import { Database, DatabaseConnectionParams } from "@/core/database/database";
 import postgres, { type Sql } from "postgres";
 
-export class PostgresDatabase implements Database {
-  private sql: Sql | null = null;
+export class Postgres implements Database {
+  private static instance: Sql | null = null;
 
   public async connect(params: DatabaseConnectionParams): Promise<void> {
-    this.sql = postgres({
+    Postgres.instance = postgres({
       host: params.host,
       port: params.port,
       database: params.database,
@@ -15,9 +15,10 @@ export class PostgresDatabase implements Database {
   }
 
   public async disconnect(): Promise<void> {
-    if (this.sql) {
-      await this.sql.end();
-      this.sql = null;
+    if (Postgres.instance) {
+      await Postgres.instance.end();
+
+      Postgres.instance = null;
     }
   }
 
@@ -25,21 +26,13 @@ export class PostgresDatabase implements Database {
     strings: TemplateStringsArray,
     ...values: unknown[]
   ): Promise<T[]> {
-    if (!this.sql) {
+    if (!Postgres.instance) {
       throw new Error("Database not connected. Call connect() first.");
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await (this.sql as any)(strings, ...values);
+    const result = await (Postgres.instance as any)(strings, ...values);
 
     return result as T[];
-  }
-
-  public getSql(): Sql {
-    if (!this.sql) {
-      throw new Error("Database not connected. Call connect() first.");
-    }
-
-    return this.sql;
   }
 }

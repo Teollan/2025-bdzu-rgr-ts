@@ -13,8 +13,8 @@ const subcommands = [
   deleteCustomerCommand,
 ];
 
-export const customersCommand = makeBranchCommand({
-  name: "customers",
+export const customerCommandBranch = makeBranchCommand({
+  name: "customer",
   description: 'Commands related to "customers" table.',
   subcommands,
 });

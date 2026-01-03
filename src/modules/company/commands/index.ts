@@ -15,8 +15,8 @@ const subcommands = [
   findCompaniesByNameCommand,
 ];
 
-export const companiesCommand = makeBranchCommand({
-  name: "companies",
+export const companyCommandBranch = makeBranchCommand({
+  name: "company",
   description: 'Commands related to "companies" table.',
   subcommands,
 });

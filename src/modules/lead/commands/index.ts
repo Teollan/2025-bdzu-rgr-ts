@@ -13,8 +13,8 @@ const subcommands = [
   deleteLeadCommand,
 ];
 
-export const leadsCommand = makeBranchCommand({
-  name: "leads",
+export const leadCommandBranch = makeBranchCommand({
+  name: "lead",
   description: 'Commands related to "leads" table.',
   subcommands,
 });

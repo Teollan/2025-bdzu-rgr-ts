@@ -22,6 +22,7 @@ export function makeCommand<T extends OptionsMap>({
   const command = new Command(name);
 
   command.description(description);
+  command.exitOverride();
 
   schema.options.forEach((option) => {
     const optionFlags = option.isRequired
