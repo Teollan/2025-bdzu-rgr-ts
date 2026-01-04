@@ -1,11 +1,9 @@
-import { Table } from "@/modules/UI/view/Table";
+import { drawTable } from "@/modules/UI/view/drawTable";
 import { Company } from "@/modules/company/model";
 
 export function showCompanies(companies: Company[]): void {
-  const table = new Table<Company>({
-    id: (c) => c.id,
-    name: (c) => c.name,
-  });
-
-  console.log(table.build(companies));
+  drawTable(companies, [
+    ["id", (c) => `${c.id}`],
+    ["name", (c) => c.name],
+  ]);
 }

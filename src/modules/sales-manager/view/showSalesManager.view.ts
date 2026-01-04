@@ -1,15 +1,11 @@
-import { ColumnValueTable } from "@/modules/UI/view/Table";
+import { drawTable } from "@/modules/UI/view/drawTable";
 import { SalesManager } from "@/modules/sales-manager/model";
 
 export function showSalesManager(salesManager: SalesManager): void {
-  const entries: [string, unknown][] = [
-    ["id", salesManager.id],
-    ["company_id", salesManager.companyId],
-    ["first_name", salesManager.firstName],
-    ["last_name", salesManager.lastName],
-  ];
+  const entries = Object.entries(salesManager);
 
-  const table = new ColumnValueTable();
-
-  console.log(table.build(entries));
+  drawTable(entries, [
+    ["key", ([k]) => k],
+    ["value", ([, v]) => v],
+  ]);
 }

@@ -1,10 +1,10 @@
 import { Postgres } from '@/core/database';
-import { Program } from '@/core/program/Program';
+import { App } from '@/core/app/App';
 
 export const main = async (): Promise<void> => {
   await Postgres.connect();
 
-  const program = new Program();
+  const program = new App();
 
   console.log('Welcome to the CRM application!');
   console.log('Type your commands below (type "exit" to quit).');

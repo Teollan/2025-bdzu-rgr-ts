@@ -4,8 +4,9 @@ import { salesManagerCommandBranch } from "@/modules/sales-manager";
 import { customerCommandBranch } from "@/modules/customer";
 import { leadCommandBranch } from "@/modules/lead";
 import { makeBranchCommand } from '@/core/command/makeBranchCommand';
+import { Router } from '@/core/router/Router';
 
-export class Program {
+export class App {
   private runner = makeBranchCommand({
     name: '>',
     description: 'CRM Application Command Line Interface',
@@ -15,6 +16,16 @@ export class Program {
       salesManagerCommandBranch,
       customerCommandBranch,
       leadCommandBranch,
+    ],
+  });
+
+  private router = new Router({
+    name: 'root',
+    children: [
+      {
+        name: 'company',
+        children: [],
+      },
     ],
   });
 

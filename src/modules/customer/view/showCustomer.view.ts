@@ -1,16 +1,11 @@
-import { ColumnValueTable } from "@/modules/UI/view/Table";
+import { drawTable } from "@/modules/UI/view/drawTable";
 import { Customer } from "@/modules/customer/model";
 
 export function showCustomer(customer: Customer): void {
-  const entries: [string, unknown][] = [
-    ["id", customer.id],
-    ["first_name", customer.firstName],
-    ["last_name", customer.lastName],
-    ["phone_number", customer.phoneNumber],
-    ["email", customer.email],
-  ];
+  const entries = Object.entries(customer);
 
-  const table = new ColumnValueTable();
-
-  console.log(table.build(entries));
+  drawTable(entries, [
+    ["key", ([k]) => k],
+    ["value", ([, v]) => v],
+  ]);
 }
