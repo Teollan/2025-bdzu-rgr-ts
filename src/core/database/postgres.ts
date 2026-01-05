@@ -2,9 +2,9 @@ import { Environment } from '@/core/environment';
 import postgres, { type Sql } from "postgres";
 
 export class Postgres {
-  private static instance: Sql | null = null;
+  static instance: Sql | null = null;
 
-  static async connect(): Promise<void> {
+  async connect(): Promise<void> {
     Postgres.instance = postgres({
       host: Environment.dbHost,
       port: Environment.dbPort,
@@ -15,7 +15,7 @@ export class Postgres {
     });
   }
 
-  static async disconnect(): Promise<void> {
+  async disconnect(): Promise<void> {
     if (Postgres.instance) {
       await Postgres.instance.end();
 
@@ -23,7 +23,7 @@ export class Postgres {
     }
   }
 
-  static get sql(): Sql {
+  get sql(): Sql {
     if (!Postgres.instance) {
       throw new Error("Database not connected. Call Postgres.connect() first.");
     }

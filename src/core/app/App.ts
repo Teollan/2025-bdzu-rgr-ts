@@ -1,60 +1,39 @@
 import prompts from 'prompts';
-import { companyCommandBranch } from "@/modules/company";
-import { salesManagerCommandBranch } from "@/modules/sales-manager";
-import { customerCommandBranch } from "@/modules/customer";
-import { leadCommandBranch } from "@/modules/lead";
-import { makeBranchCommand } from '@/core/command/makeBranchCommand';
 import { Router } from '@/core/router/Router';
+import { HomeScreenController } from '@/modules/home/controllers/HomeScreen.controller';
+import { Postgres } from '@/core/database';
 
 export class App {
-  private runner = makeBranchCommand({
-    name: '>',
-    description: 'CRM Application Command Line Interface',
-    helpCommand: true,
-    subcommands: [
-      companyCommandBranch,
-      salesManagerCommandBranch,
-      customerCommandBranch,
-      leadCommandBranch,
-    ],
-  });
+  public readonly ask = prompts;
 
-  private router = new Router({
-    name: 'root',
-    children: [
-      {
-        name: 'company',
-        children: [],
-      },
-    ],
-  });
+  public readonly router: Router;
 
-  public async read(): Promise<string> {
-    const { input } = await prompts({
-      type: 'text',
-      name: 'input',
-      message: 'Enter your command:',
+  public readonly db: Postgres;
+
+  constructor() {
+    this.db = new Postgres();
+
+    this.router = new Router({
+      controller: new HomeScreenController(this),
     });
-
-    return input.trim();
   }
 
-  public async evaluate(raw: string): Promise<void> {
-    await this.runner.parseAsync(
-      this.split(raw),
-      { from: 'user' },
-    );
+  public async init(): Promise<void> {
+    await this.db.connect();
   }
 
-  public split(raw: string): string[] {
-    const regex = /("[^"]*")|(\S+)/g;
-
-    const tokens: string[] = [];
-
-    for (const match of raw.matchAll(regex)) {
-      tokens.push(match[1] ?? match[2]);
+  public async run(): Promise<string> {
+    while (true) {
+      try {
+        await this.router.currentRoute.controller.run();
+      } catch (error) {
+        console.error('An error occurred:', error);
+      }
     }
+  }
 
-    return tokens;
+  public stop() {
+    console.log('Goodbye!');
+    process.exit(0);
   }
 }

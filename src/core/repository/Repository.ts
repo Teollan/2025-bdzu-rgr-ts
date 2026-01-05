@@ -3,8 +3,10 @@ import { defined } from '@/lib/functional';
 import type { Sql } from 'postgres';
 
 export abstract class Repository {
-  protected get sql(): Sql {
-    return Postgres.sql;
+  protected sql: Sql;
+
+  constructor(db: Postgres) {
+    this.sql = db.sql;
   }
 
   protected updates(input: Record<string, unknown>) {
