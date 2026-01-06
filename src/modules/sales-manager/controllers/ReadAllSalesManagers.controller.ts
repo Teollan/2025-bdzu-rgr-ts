@@ -1,19 +1,12 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { SalesManagerRepository } from "@/modules/sales-manager/model";
-import { showSalesManagers } from "@/modules/sales-manager/view";
+import { showSalesManagers } from "@/modules/sales-manager/view/showSalesManagers.view";
 
-export interface ReadAllSalesManagersArgs {
-  limit: number;
-  offset: number;
-}
+export class ReadAllSalesManagersController extends ActionController {
+  private repository = this.makeRepository(SalesManagerRepository);
 
-type Args = ReadAllSalesManagersArgs;
-
-export class ReadAllSalesManagersController extends Controller<Args> {
-  private repository = new SalesManagerRepository();
-
-  async run(args: Args): Promise<void> {
-    const salesManagers = await this.repository.getAllSalesManagers(args);
+  async run(): Promise<void> {
+    const salesManagers = await this.repository.getAllSalesManagers({});
 
     if (salesManagers.length === 0) {
       console.log("No sales managers found.");

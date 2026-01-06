@@ -3,11 +3,12 @@ export type Value = Date | string | number | boolean | null;
 export type ColumnBlueprint<T> = [string, (item: T) => Value];
 
 export function drawTable<T>(items: T[], blueprints: ColumnBlueprint<T>[]) {
-  const names = blueprints.map(getColumnName);
+  const namedColumns = blueprints.map(getNamedColumns(items));
 
-  const columns = blueprints.map(getColumnValues(items));
+  const names = namedColumns.map(([name]) => name);
+  const columns = namedColumns.map(([, ...values]) => values);
   
-  const widths = [names, ...columns].map(getColumnWidth);
+  const widths = namedColumns.map(getColumnWidth);
 
   const rows = transpose(columns);
 
@@ -18,19 +19,19 @@ export function drawTable<T>(items: T[], blueprints: ColumnBlueprint<T>[]) {
   drawBorder(widths);
 
   rows.forEach(drawRow(widths));
+
+  drawBorder(widths);
 }
 
-function getColumnName<T>(extractor: ColumnBlueprint<T>) {
-  return extractor[0];
-}
+function getNamedColumns<T>(items: T[]) {
+  return ([name, extractor]: ColumnBlueprint<T>) => {
+    const values = items.map((item) => String(extractor(item)));
 
-function getColumnValues<T>(items: T[]) {
-  return ([_, extractor]: ColumnBlueprint<T>) => {
-    return items.map((item) => String(extractor(item)));
+    return [name, ...values.map(String)];
   }
 } 
 
-function transpose<T>(matrix: T[][]): T[][] {
+function transpose(matrix: string[][]): string[][] {
   return matrix[0].map((_, i) => matrix.map(row => row[i]));
 }
 

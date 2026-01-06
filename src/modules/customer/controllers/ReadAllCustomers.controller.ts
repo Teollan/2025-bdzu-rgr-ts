@@ -1,19 +1,12 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CustomerRepository } from "@/modules/customer/model";
-import { showCustomers } from "@/modules/customer/view";
+import { showCustomers } from "@/modules/customer/view/showCustomers.view";
 
-export interface ReadAllCustomersArgs {
-  limit: number;
-  offset: number;
-}
+export class ReadAllCustomersController extends ActionController {
+  private repository = this.makeRepository(CustomerRepository);
 
-type Args = ReadAllCustomersArgs;
-
-export class ReadAllCustomersController extends Controller<Args> {
-  private repository = new CustomerRepository();
-
-  async run(args: Args): Promise<void> {
-    const customers = await this.repository.getAllCustomers(args);
+  async run(): Promise<void> {
+    const customers = await this.repository.getAllCustomers({});
 
     if (customers.length === 0) {
       console.log("No customers found.");

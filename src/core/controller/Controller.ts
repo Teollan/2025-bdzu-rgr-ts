@@ -9,9 +9,13 @@ export abstract class Controller {
     this.app = app;
   }
 
-  abstract run(): Promise<void>;
+  public abstract invoke(): Promise<void>;
 
-  protected makeRepository(RepositoryInstance: new (db: Postgres) => Repository) {
+  protected abstract run(): Promise<void>;
+
+  protected makeRepository<T extends Repository>(
+    RepositoryInstance: new (db: Postgres) => T
+  ): T {
     return new RepositoryInstance(this.app.db);
   }
 }

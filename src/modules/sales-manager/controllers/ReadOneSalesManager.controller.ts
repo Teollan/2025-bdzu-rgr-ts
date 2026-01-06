@@ -1,17 +1,24 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { SalesManagerRepository } from "@/modules/sales-manager/model";
-import { showSalesManager } from "@/modules/sales-manager/view";
+import { showSalesManager } from "@/modules/sales-manager/view/showSalesManager.view";
 
-export interface ReadOneSalesManagerArgs {
-  id: number;
-}
+export class ReadOneSalesManagerController extends ActionController {
+  private repository = this.makeRepository(SalesManagerRepository);
 
-type Args = ReadOneSalesManagerArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter sales manager ID:',
+      min: 1,
+    });
 
-export class ReadOneSalesManagerController extends Controller<Args> {
-  private repository = new SalesManagerRepository();
+    if (!id) {
+      console.log('Cancelled.');
 
-  async run({ id }: Args): Promise<void> {
+      return;
+    }
+
     const salesManager = await this.repository.findSalesManagerById(id);
 
     if (!salesManager) {

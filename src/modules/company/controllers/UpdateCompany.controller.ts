@@ -1,20 +1,32 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CompanyRepository } from "@/modules/company/model";
-import { showCompany } from '@/modules/company/view';
+import { showCompany } from '@/modules/company/view/showCompany.view';
 
-export interface UpdateCompanyArgs {
-  id: number;
-  name?: string;
-}
+export class UpdateCompanyController extends ActionController {
+  private repository = this.makeRepository(CompanyRepository);
 
-type Args = UpdateCompanyArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter company ID to update:',
+      min: 1,
+    });
 
-export class UpdateCompanyController extends Controller<Args> {
-  private repository = new CompanyRepository();
+    const { name } = await this.app.ask({
+      name: 'name',
+      type: 'text',
+      message: 'Enter new company name (leave empty to skip):',
+    });
 
-  async run({ id, ...updates }: Args): Promise<void> {
-    const company = await this.repository.updateCompany(id, updates);
-    
+    if (!name) {
+      console.log('No changes made.');
+
+      return;
+    }
+
+    const company = await this.repository.updateCompany(id, { name });
+
     console.log(`Company ${company.id} updated successfully`);
     showCompany(company);
   }

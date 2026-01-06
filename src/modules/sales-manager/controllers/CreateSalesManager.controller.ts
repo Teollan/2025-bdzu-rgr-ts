@@ -1,20 +1,52 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { SalesManagerRepository } from "@/modules/sales-manager/model";
-import { showSalesManager } from '@/modules/sales-manager/view';
+import { showSalesManager } from '@/modules/sales-manager/view/showSalesManager.view';
 
-export interface CreateSalesManagerArgs {
-  companyId: number;
-  firstName: string;
-  lastName: string;
-}
+export class CreateSalesManagerController extends ActionController {
+  private repository = this.makeRepository(SalesManagerRepository);
 
-type Args = CreateSalesManagerArgs;
+  async run(): Promise<void> {
+    const { companyId } = await this.app.ask({
+      name: 'companyId',
+      type: 'number',
+      message: 'Enter company ID:',
+    });
 
-export class CreateSalesManagerController extends Controller<Args> {
-  private repository = new SalesManagerRepository();
+    if (!companyId) {
+      console.log('Sales manager creation cancelled.');
 
-  async run(args: Args): Promise<void> {
-    const salesManager = await this.repository.createSalesManager(args);
+      return;
+    }
+
+    const { firstName } = await this.app.ask({
+      name: 'firstName',
+      type: 'text',
+      message: 'Enter first name:',
+    });
+
+    if (!firstName) {
+      console.log('Sales manager creation cancelled.');
+
+      return;
+    }
+
+    const { lastName } = await this.app.ask({
+      name: 'lastName',
+      type: 'text',
+      message: 'Enter last name:',
+    });
+
+    if (!lastName) {
+      console.log('Sales manager creation cancelled.');
+
+      return;
+    }
+
+    const salesManager = await this.repository.createSalesManager({
+      companyId,
+      firstName,
+      lastName,
+    });
 
     console.log(`Sales manager created with id ${salesManager.id}`);
     showSalesManager(salesManager);

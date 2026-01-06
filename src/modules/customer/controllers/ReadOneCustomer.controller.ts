@@ -1,17 +1,24 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CustomerRepository } from "@/modules/customer/model";
-import { showCustomer } from "@/modules/customer/view";
+import { showCustomer } from "@/modules/customer/view/showCustomer.view";
 
-export interface ReadOneCustomerArgs {
-  id: number;
-}
+export class ReadOneCustomerController extends ActionController {
+  private repository = this.makeRepository(CustomerRepository);
 
-type Args = ReadOneCustomerArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter customer ID:',
+      min: 1,
+    });
 
-export class ReadOneCustomerController extends Controller<Args> {
-  private repository = new CustomerRepository();
+    if (!id) {
+      console.log('Cancelled.');
 
-  async run({ id }: Args): Promise<void> {
+      return;
+    }
+
     const customer = await this.repository.findCustomerById(id);
 
     if (!customer) {

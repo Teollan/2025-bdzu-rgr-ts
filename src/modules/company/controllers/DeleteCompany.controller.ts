@@ -1,19 +1,26 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CompanyRepository } from "@/modules/company/model";
-import { showCompany } from '@/modules/company/view';
+import { showCompany } from '@/modules/company/view/showCompany.view';
 
-export interface DeleteCompanyArgs {
-  id: number;
-}
+export class DeleteCompanyController extends ActionController {
+  private repository = this.makeRepository(CompanyRepository);
 
-type Args = DeleteCompanyArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter company ID to delete:',
+      min: 1,
+    });
 
-export class DeleteCompanyController extends Controller<Args> {
-  private repository = new CompanyRepository();
+    if (!id) {
+      console.log('Deletion cancelled.');
 
-  async run(args: Args): Promise<void> {
-    const company = await this.repository.deleteCompany(args.id);
-    
+      return;
+    }
+
+    const company = await this.repository.deleteCompany(id);
+
     console.log(`Company ${company.id} deleted successfully`);
     showCompany(company);
   }

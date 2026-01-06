@@ -1,17 +1,23 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CompanyRepository } from "@/modules/company/model";
-import { showCompanies } from "@/modules/company/view";
+import { showCompanies } from "@/modules/company/view/showCompanies.view";
 
-export interface FindCompaniesByNameArgs {
-  name: string;
-}
+export class FindCompaniesByNameController extends ActionController {
+  private repository = this.makeRepository(CompanyRepository);
 
-type Args = FindCompaniesByNameArgs;
+  async run(): Promise<void> {
+    const { name } = await this.app.ask({
+      name: 'name',
+      type: 'text',
+      message: 'Enter company name to search:',
+    });
 
-export class FindCompaniesByNameController extends Controller<Args> {
-  private repository = new CompanyRepository();
+    if (!name) {
+      console.log('Search cancelled.');
 
-  async run({ name }: Args): Promise<void> {
+      return;
+    }
+
     const companies = await this.repository.findCompaniesByName(name);
 
     if (companies.length === 0) {

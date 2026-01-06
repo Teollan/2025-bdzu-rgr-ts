@@ -1,18 +1,25 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { LeadRepository } from "@/modules/lead/model";
-import { showLead } from '@/modules/lead/view';
+import { showLead } from '@/modules/lead/view/showLead.view';
 
-export interface DeleteLeadArgs {
-  id: number;
-}
+export class DeleteLeadController extends ActionController {
+  private repository = this.makeRepository(LeadRepository);
 
-type Args = DeleteLeadArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter lead ID to delete:',
+      min: 1,
+    });
 
-export class DeleteLeadController extends Controller<Args> {
-  private repository = new LeadRepository();
+    if (!id) {
+      console.log('Deletion cancelled.');
 
-  async run(args: Args): Promise<void> {
-    const lead = await this.repository.deleteLead(args.id);
+      return;
+    }
+
+    const lead = await this.repository.deleteLead(id);
 
     console.log(`Lead ${lead.id} deleted successfully`);
     showLead(lead);

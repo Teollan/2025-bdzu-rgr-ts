@@ -1,7 +1,25 @@
-import { Controller } from '@/core/controller';
+import { NavigationController } from '@/core/controller/NavigationController';
 
-export class SelectCompanyActionController extends Controller {
-  run(): Promise<void> {
-    throw new Error('Method not implemented.');
+export class SelectCompanyActionController extends NavigationController {
+  async run(): Promise<void> {
+    const { route } = await this.app.ask({
+      name: 'route',
+      type: 'select',
+      message: 'You are managing Companies. What would you like to do?',
+      choices: [
+        { title: 'List', value: 'app/company/list' },
+        { title: 'Find', value: 'app/company/find' },
+        { title: 'Create', value: 'app/company/create' },
+        { title: 'Update', value: 'app/company/update' },
+        { title: 'Delete', value: 'app/company/delete' },
+        { title: 'Go Back', value: null }, 
+      ],
+    });
+
+    if (!route) {
+      await this.app.router.back();
+    }
+
+    await this.app.router.navigate(route);
   }
 }

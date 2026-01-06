@@ -1,17 +1,24 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { SalesManagerRepository } from "@/modules/sales-manager/model";
-import { showSalesManager } from '@/modules/sales-manager/view';
+import { showSalesManager } from '@/modules/sales-manager/view/showSalesManager.view';
 
-export interface DeleteSalesManagerArgs {
-  id: number;
-}
+export class DeleteSalesManagerController extends ActionController {
+  private repository = this.makeRepository(SalesManagerRepository);
 
-type Args = DeleteSalesManagerArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter sales manager ID to delete:',
+      min: 1,
+    });
 
-export class DeleteSalesManagerController extends Controller<Args> {
-  private repository = new SalesManagerRepository();
+    if (!id) {
+      console.log('Deletion cancelled.');
 
-  async run({ id }: Args): Promise<void> {
+      return;
+    }
+
     const salesManager = await this.repository.deleteSalesManager(id);
 
     console.log(`Sales manager ${salesManager.id} deleted successfully`);

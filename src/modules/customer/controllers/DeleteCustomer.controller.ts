@@ -1,18 +1,25 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CustomerRepository } from "@/modules/customer/model";
-import { showCustomer } from '@/modules/customer/view';
+import { showCustomer } from '@/modules/customer/view/showCustomer.view';
 
-export interface DeleteCustomerArgs {
-  id: number;
-}
+export class DeleteCustomerController extends ActionController {
+  private repository = this.makeRepository(CustomerRepository);
 
-type Args = DeleteCustomerArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter customer ID to delete:',
+      min: 1,
+    });
 
-export class DeleteCustomerController extends Controller<Args> {
-  private repository = new CustomerRepository();
+    if (!id) {
+      console.log('Deletion cancelled.');
 
-  async run(args: Args): Promise<void> {
-    const customer = await this.repository.deleteCustomer(args.id);
+      return;
+    }
+
+    const customer = await this.repository.deleteCustomer(id);
 
     console.log(`Customer ${customer.id} deleted successfully`);
     showCustomer(customer);

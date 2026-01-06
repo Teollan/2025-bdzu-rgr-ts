@@ -1,22 +1,29 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CompanyRepository } from "@/modules/company/model";
-import { showCompany } from "@/modules/company/view";
+import { showCompany } from "@/modules/company/view/showCompany.view";
 
-export interface ReadOneCompanyArgs {
-  id: number;
-}
+export class ReadOneCompanyController extends ActionController {
+  private repository = this.makeRepository(CompanyRepository);
 
-type Args = ReadOneCompanyArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter company ID:',
+      min: 1,
+    });
 
-export class ReadOneCompanyController extends Controller<Args> {
-  private repository = new CompanyRepository();
+    if (!id) {
+      console.log('Cancelled.');
 
-  async run({ id}: Args): Promise<void> {
+      return;
+    }
+
     const company = await this.repository.findCompanyById(id);
 
     if (!company) {
       console.log(`Company with id ${id} not found.`);
-      
+
       return;
     }
 

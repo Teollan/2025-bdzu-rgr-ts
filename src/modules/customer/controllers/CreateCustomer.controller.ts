@@ -1,21 +1,65 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CustomerRepository } from "@/modules/customer/model";
-import { showCustomer } from '@/modules/customer/view';
+import { showCustomer } from '@/modules/customer/view/showCustomer.view';
 
-export interface CreateCustomerArgs {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-}
+export class CreateCustomerController extends ActionController {
+  private repository = this.makeRepository(CustomerRepository);
 
-type Args = CreateCustomerArgs;
+  async run(): Promise<void> {
+    const { firstName } = await this.app.ask({
+      name: 'firstName',
+      type: 'text',
+      message: 'Enter first name:',
+    });
 
-export class CreateCustomerController extends Controller<Args> {
-  private repository = new CustomerRepository();
+    if (!firstName) {
+      console.log('Customer creation cancelled.');
 
-  async run(args: Args): Promise<void> {
-    const customer = await this.repository.createCustomer(args);
+      return;
+    }
+
+    const { lastName } = await this.app.ask({
+      name: 'lastName',
+      type: 'text',
+      message: 'Enter last name:',
+    });
+
+    if (!lastName) {
+      console.log('Customer creation cancelled.');
+
+      return;
+    }
+
+    const { phoneNumber } = await this.app.ask({
+      name: 'phoneNumber',
+      type: 'text',
+      message: 'Enter phone number:',
+    });
+
+    if (!phoneNumber) {
+      console.log('Customer creation cancelled.');
+
+      return;
+    }
+
+    const { email } = await this.app.ask({
+      name: 'email',
+      type: 'text',
+      message: 'Enter email:',
+    });
+
+    if (!email) {
+      console.log('Customer creation cancelled.');
+
+      return;
+    }
+
+    const customer = await this.repository.createCustomer({
+      firstName,
+      lastName,
+      phoneNumber,
+      email,
+    });
 
     console.log(`Customer created with id ${customer.id}`);
     showCustomer(customer);

@@ -29,7 +29,7 @@ export class CompanyRepository extends Repository {
   async getAllCompanies({
     limit = 20,
     offset = 0,
-  }: PaginationParams): Promise<Company[]> {
+  }: PaginationParams = {}): Promise<Company[]> {
     return this.sql<Company[]>`
       SELECT *
       FROM companies

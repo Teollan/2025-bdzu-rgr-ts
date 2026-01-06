@@ -1,17 +1,24 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { LeadRepository } from "@/modules/lead/model";
-import { showLead } from "@/modules/lead/view";
+import { showLead } from "@/modules/lead/view/showLead.view";
 
-export interface ReadOneLeadArgs {
-  id: number;
-}
+export class ReadOneLeadController extends ActionController {
+  private repository = this.makeRepository(LeadRepository);
 
-type Args = ReadOneLeadArgs;
+  async run(): Promise<void> {
+    const { id } = await this.app.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter lead ID:',
+      min: 1,
+    });
 
-export class ReadOneLeadController extends Controller<Args> {
-  private repository = new LeadRepository();
+    if (!id) {
+      console.log('Cancelled.');
 
-  async run({ id }: Args): Promise<void> {
+      return;
+    }
+
     const lead = await this.repository.findLeadById(id);
 
     if (!lead) {

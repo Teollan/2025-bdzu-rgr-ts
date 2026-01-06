@@ -1,19 +1,25 @@
-import { Controller } from "@/core/controller";
+import { ActionController } from '@/core/controller/ActionController';
 import { CompanyRepository } from "@/modules/company/model";
-import { showCompany } from '@/modules/company/view';
+import { showCompany } from '@/modules/company/view/showCompany.view';
 
-export interface CreateCompanyArgs {
-  name: string;
-}
+export class CreateCompanyController extends ActionController {
+  private repository = this.makeRepository(CompanyRepository);
 
-type Args = CreateCompanyArgs;
+  async run(): Promise<void> {
+    const { name } = await this.app.ask({
+      name: 'name',
+      type: 'text',
+      message: 'Enter company name:',
+    });
 
-export class CreateCompanyController extends Controller<Args> {
-  private repository = new CompanyRepository();
+    if (!name) {
+      console.log('Company creation cancelled.');
 
-  async run(args: Args): Promise<void> {
-    const company = await this.repository.createCompany(args);
-    
+      return;
+    }
+
+    const company = await this.repository.createCompany({ name });
+
     console.log(`Company created with id ${company.id}`);
     showCompany(company);
   }
