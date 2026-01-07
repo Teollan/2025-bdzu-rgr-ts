@@ -77,6 +77,6 @@ export class Router {
 
     const controller = new ControllerClass(context);
 
-    await controller.invoke();
+    await controller.run();
   }
 }

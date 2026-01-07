@@ -1,5 +1,5 @@
 import { View } from '@/core/view/View';
-import { Customer } from '@/modules/customer/model';
+import { Customer } from '@/modules/customer/Customer.entity';
 
 export class CustomerView extends View {
   one(customer: Customer): void {

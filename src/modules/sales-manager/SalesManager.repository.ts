@@ -1,5 +1,5 @@
 import { PaginationParams, Repository } from "@/core/repository";
-import { CreateSalesManagerFields, SalesManager, UpdateSalesManagerFields } from "@/modules/sales-manager/model/SalesManager.entity.ts";
+import { CreateSalesManagerFields, SalesManager, UpdateSalesManagerFields } from "@/modules/sales-manager/SalesManager.entity";
 
 export class SalesManagerRepository extends Repository {
   async findById(id: number): Promise<SalesManager | null> {

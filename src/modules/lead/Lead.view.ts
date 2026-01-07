@@ -1,5 +1,5 @@
 import { View } from '@/core/view/View';
-import { Lead } from '@/modules/lead/model';
+import { Lead } from '@/modules/lead/Lead.entity';
 
 export class LeadView extends View {
   one(lead: Lead): void {

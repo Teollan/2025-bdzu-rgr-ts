@@ -1,5 +1,5 @@
 import { PaginationParams, Repository } from "@/core/repository";
-import { Company, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/model/Company.entity.ts";
+import { Company, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/Company.entity";
 
 export class CompanyRepository extends Repository {
   async findById(id: number): Promise<Company | null> {

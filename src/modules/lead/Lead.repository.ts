@@ -1,5 +1,5 @@
 import { PaginationParams, Repository } from "@/core/repository";
-import { CreateLeadFields, Lead, UpdateLeadFields } from "@/modules/lead/model/Lead.entity.ts";
+import { CreateLeadFields, Lead, UpdateLeadFields } from "@/modules/lead/Lead.entity";
 
 export class LeadRepository extends Repository {
   async findById(id: number): Promise<Lead | null> {

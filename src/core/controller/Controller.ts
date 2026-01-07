@@ -21,9 +21,7 @@ export abstract class Controller {
     this.router = context.router;
   }
 
-  public abstract invoke(): Promise<void>;
-
-  protected abstract run(): Promise<void>;
+  public abstract run(): Promise<void>;
 
   protected makeRepository<T extends Repository>(
     RepositoryClass: RepositoryConstructor<T>

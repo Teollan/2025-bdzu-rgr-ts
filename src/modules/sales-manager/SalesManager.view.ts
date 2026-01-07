@@ -1,5 +1,5 @@
 import { View } from '@/core/view/View';
-import { SalesManager } from '@/modules/sales-manager/model';
+import { SalesManager } from '@/modules/sales-manager/SalesManager.entity';
 
 export class SalesManagerView extends View {
   one(salesManager: SalesManager): void {

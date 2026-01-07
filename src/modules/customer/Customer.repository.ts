@@ -1,5 +1,5 @@
 import { PaginationParams, Repository } from "@/core/repository";
-import { CreateCustomerFields, Customer, UpdateCustomerFields } from "@/modules/customer/model/Customer.entity.ts";
+import { CreateCustomerFields, Customer, UpdateCustomerFields } from "@/modules/customer/Customer.entity";
 
 export class CustomerRepository extends Repository {
   async findById(id: number): Promise<Customer | null> {
