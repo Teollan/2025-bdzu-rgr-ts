@@ -16,10 +16,22 @@ export abstract class App {
   private static router: Router = new Router({
     ControllerClass: HomeScreenController,
     children: [
-      { name: 'company', ControllerClass: CompanyController },
-      { name: 'customer', ControllerClass: CustomerController },
-      { name: 'lead', ControllerClass: LeadController },
-      { name: 'sales-manager', ControllerClass: SalesManagerController },
+      {
+        name: 'company',
+        ControllerClass: CompanyController
+      },
+      {
+        name: 'customer',
+        ControllerClass: CustomerController,
+      },
+      {
+        name: 'lead',
+        ControllerClass: LeadController,
+      },
+      {
+        name: 'sales-manager',
+        ControllerClass: SalesManagerController,
+      },
     ],
   });
 
