@@ -1,12 +1,24 @@
-import { App } from '@/core/app/App';
 import { Postgres } from '@/core/database';
-import { Repository } from '@/core/repository';
+import { InputOutput } from '@/core/io/InputOutput';
+import { Repository, RepositoryConstructor } from '@/core/repository';
+import { Router } from '@/core/router/Router';
+import { View, ViewConstructor } from '@/core/view/View';
+
+export interface ControllerContext {
+  db: Postgres;
+  io: InputOutput;
+  router: Router;
+}
 
 export abstract class Controller {
-  protected app: App;
+  protected db: Postgres;
+  protected io: InputOutput;
+  protected router: Router;
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(context: ControllerContext) {
+    this.db = context.db;
+    this.io = context.io;
+    this.router = context.router;
   }
 
   public abstract invoke(): Promise<void>;
@@ -14,8 +26,22 @@ export abstract class Controller {
   protected abstract run(): Promise<void>;
 
   protected makeRepository<T extends Repository>(
-    RepositoryInstance: new (db: Postgres) => T
+    RepositoryClass: RepositoryConstructor<T>
   ): T {
-    return new RepositoryInstance(this.app.db);
+    return new RepositoryClass({
+      db: this.db,
+    });
+  }
+
+  protected makeView<T extends View>(
+    ViewClass: ViewConstructor<T>
+  ): T {
+    return new ViewClass({
+      io: this.io,
+    });
   }
 }
+
+export type ControllerConstructor<T extends Controller = Controller> = new (
+  context: ControllerContext
+) => T;

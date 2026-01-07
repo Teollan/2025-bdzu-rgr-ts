@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { LeadRepository } from "@/modules/lead/model";
-import { showLead } from '@/modules/lead/view/showLead.view';
+import { LeadView } from '@/modules/lead/view/Lead.view';
 
 export class DeleteLeadController extends ActionController {
-  private repository = this.makeRepository(LeadRepository);
+  private leadRepository = this.makeRepository(LeadRepository);
+  private leadView = this.makeView(LeadView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter lead ID to delete:',
@@ -14,14 +15,14 @@ export class DeleteLeadController extends ActionController {
     });
 
     if (!id) {
-      console.log('Deletion cancelled.');
+      this.io.say('Deletion cancelled.');
 
       return;
     }
 
-    const lead = await this.repository.deleteLead(id);
+    const lead = await this.leadRepository.delete(id);
 
-    console.log(`Lead ${lead.id} deleted successfully`);
-    showLead(lead);
+    this.io.say(`Lead ${lead.id} deleted successfully`);
+    this.leadView.one(lead);
   }
 }

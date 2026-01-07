@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { CustomerRepository } from "@/modules/customer/model";
-import { showCustomer } from '@/modules/customer/view/showCustomer.view';
+import { CustomerView } from '@/modules/customer/view/Customer.view';
 
 export class UpdateCustomerController extends ActionController {
-  private repository = this.makeRepository(CustomerRepository);
+  private customerRepository = this.makeRepository(CustomerRepository);
+  private customerView = this.makeView(CustomerView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter customer ID to update:',
@@ -14,30 +15,30 @@ export class UpdateCustomerController extends ActionController {
     });
 
     if (!id) {
-      console.log('Update cancelled.');
+      this.io.say('Update cancelled.');
 
       return;
     }
 
-    const { firstName } = await this.app.ask({
+    const { firstName } = await this.io.ask({
       name: 'firstName',
       type: 'text',
       message: 'Enter new first name (leave empty to skip):',
     });
 
-    const { lastName } = await this.app.ask({
+    const { lastName } = await this.io.ask({
       name: 'lastName',
       type: 'text',
       message: 'Enter new last name (leave empty to skip):',
     });
 
-    const { phoneNumber } = await this.app.ask({
+    const { phoneNumber } = await this.io.ask({
       name: 'phoneNumber',
       type: 'text',
       message: 'Enter new phone number (leave empty to skip):',
     });
 
-    const { email } = await this.app.ask({
+    const { email } = await this.io.ask({
       name: 'email',
       type: 'text',
       message: 'Enter new email (leave empty to skip):',
@@ -51,14 +52,14 @@ export class UpdateCustomerController extends ActionController {
     if (email) updates.email = email;
 
     if (Object.keys(updates).length === 0) {
-      console.log('No changes made.');
+      this.io.say('No changes made.');
 
       return;
     }
 
-    const customer = await this.repository.updateCustomer(id, updates);
+    const customer = await this.customerRepository.update(id, updates);
 
-    console.log(`Customer ${customer.id} updated successfully`);
-    showCustomer(customer);
+    this.io.say(`Customer ${customer.id} updated successfully`);
+    this.customerView.one(customer);
   }
 }

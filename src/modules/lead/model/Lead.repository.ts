@@ -2,7 +2,7 @@ import { PaginationParams, Repository } from "@/core/repository";
 import { CreateLeadFields, Lead, UpdateLeadFields } from "@/modules/lead/model/Lead.entity.ts";
 
 export class LeadRepository extends Repository {
-  async findLeadById(id: number): Promise<Lead | null> {
+  async findById(id: number): Promise<Lead | null> {
     const result = await this.sql<Lead[]>`
       SELECT *
       FROM leads
@@ -16,10 +16,10 @@ export class LeadRepository extends Repository {
     return result[0];
   }
 
-  async getAllLeads({
+  async list({
     limit = 20,
     offset = 0,
-  }: PaginationParams): Promise<Lead[]> {
+  }: PaginationParams = {}): Promise<Lead[]> {
     return this.sql<Lead[]>`
       SELECT *
       FROM leads
@@ -28,7 +28,7 @@ export class LeadRepository extends Repository {
     `;
   }
 
-  async createLead({
+  async create({
     companyId,
     customerId,
     status
@@ -42,7 +42,7 @@ export class LeadRepository extends Repository {
     return result[0];
   }
 
-  async updateLead(
+  async update(
     id: number,
     fields: UpdateLeadFields,
   ): Promise<Lead> {
@@ -60,7 +60,7 @@ export class LeadRepository extends Repository {
     return result[0];
   }
 
-  async deleteLead(id: number): Promise<Lead> {
+  async delete(id: number): Promise<Lead> {
     const result = await this.sql<Lead[]>`
       DELETE
       FROM leads

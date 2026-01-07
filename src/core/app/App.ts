@@ -1,7 +1,9 @@
-import prompts from 'prompts';
 import { Router } from '@/core/router/Router';
-import { HomeScreenController } from '@/modules/home/controllers/HomeScreen.controller';
 import { Postgres } from '@/core/database';
+import { InputOutput } from '@/core/io/InputOutput';
+
+// Home controller
+import { HomeScreenController } from '@/modules/home/controllers/HomeScreen.controller';
 
 // Company controllers
 import { SelectCompanyActionController } from '@/modules/company/controllers/SelectCompanyAction.controller';
@@ -35,91 +37,87 @@ import { CreateSalesManagerController } from '@/modules/sales-manager/controller
 import { UpdateSalesManagerController } from '@/modules/sales-manager/controllers/UpdateSalesManager.controller';
 import { DeleteSalesManagerController } from '@/modules/sales-manager/controllers/DeleteSalesManager.controller';
 
-export class App {
-  public readonly ask = prompts;
 
-  public readonly router: Router;
+export abstract class App {
+  private static io = new InputOutput();
 
-  public readonly db: Postgres;
+  private static db: Postgres = new Postgres();
 
-  private constructor(config: {
-    db: Postgres;
-  }) {
-    this.db = config.db;
-
-    this.router = new Router({
-      controller: new HomeScreenController(this),
+  private static router: Router = new Router({
+      ControllerClass: HomeScreenController,
       children: [
         {
           name: "company",
-          controller: new SelectCompanyActionController(this),
+          ControllerClass: SelectCompanyActionController,
           children: [
-            { name: "list", controller: new ListCompaniesController(this) },
-            { name: "find", controller: new ReadOneCompanyController(this) },
-            { name: "create", controller: new CreateCompanyController(this) },
-            { name: "update", controller: new UpdateCompanyController(this) },
-            { name: "delete", controller: new DeleteCompanyController(this) },
+            { name: "list", ControllerClass: ListCompaniesController },
+            { name: "find", ControllerClass: ReadOneCompanyController },
+            { name: "create", ControllerClass: CreateCompanyController },
+            { name: "update", ControllerClass: UpdateCompanyController },
+            { name: "delete", ControllerClass: DeleteCompanyController },
           ],
         },
         {
           name: "customer",
-          controller: new SelectCustomerActionController(this),
+          ControllerClass: SelectCustomerActionController,
           children: [
-            { name: "list", controller: new ReadAllCustomersController(this) },
-            { name: "find", controller: new ReadOneCustomerController(this) },
-            { name: "create", controller: new CreateCustomerController(this) },
-            { name: "update", controller: new UpdateCustomerController(this) },
-            { name: "delete", controller: new DeleteCustomerController(this) },
+            { name: "list", ControllerClass: ReadAllCustomersController },
+            { name: "find", ControllerClass: ReadOneCustomerController },
+            { name: "create", ControllerClass: CreateCustomerController },
+            { name: "update", ControllerClass: UpdateCustomerController },
+            { name: "delete", ControllerClass: DeleteCustomerController },
           ],
         },
         {
           name: "lead",
-          controller: new SelectLeadActionController(this),
+          ControllerClass: SelectLeadActionController,
           children: [
-            { name: "list", controller: new ReadAllLeadsController(this) },
-            { name: "find", controller: new ReadOneLeadController(this) },
-            { name: "create", controller: new CreateLeadController(this) },
-            { name: "update", controller: new UpdateLeadController(this) },
-            { name: "delete", controller: new DeleteLeadController(this) },
+            { name: "list", ControllerClass: ReadAllLeadsController },
+            { name: "find", ControllerClass: ReadOneLeadController },
+            { name: "create", ControllerClass: CreateLeadController },
+            { name: "update", ControllerClass: UpdateLeadController },
+            { name: "delete", ControllerClass: DeleteLeadController },
           ],
         },
         {
           name: "sales-manager",
-          controller: new SelectSalesManagerActionController(this),
+          ControllerClass: SelectSalesManagerActionController,
           children: [
-            { name: "list", controller: new ReadAllSalesManagersController(this) },
-            { name: "find", controller: new ReadOneSalesManagerController(this) },
-            { name: "create", controller: new CreateSalesManagerController(this) },
-            { name: "update", controller: new UpdateSalesManagerController(this) },
-            { name: "delete", controller: new DeleteSalesManagerController(this) },
+            { name: "list", ControllerClass: ReadAllSalesManagersController },
+            { name: "find", ControllerClass: ReadOneSalesManagerController },
+            { name: "create", ControllerClass: CreateSalesManagerController },
+            { name: "update", ControllerClass: UpdateSalesManagerController },
+            { name: "delete", ControllerClass: DeleteSalesManagerController },
           ],
         },
       ],
     });
-  }
 
-  public static async create(): Promise<App> {
-    const db = new Postgres();
-
+  public static async start(): Promise<App> {
+    const {
+      db,
+      io,
+      router,
+    } = App;
+    
     await db.connect();
 
-    return new App({ db });
-  }
-
-  public async run(): Promise<string> {
     while (true) {
       try {
-        const { controller } = this.router.currentRoute;
+        const context = { db, io, router };
 
-        await controller.invoke();
+        await router.invoke(context);
       } catch (error) {
-        console.error('An error occurred:', error);
+        io.error('An error occurred:', error);
       }
     }
   }
 
-  public stop() {
-    console.log('Goodbye!');
+  public static async stop() {
+    await App.db.disconnect();
+
+    App.io.say('Goodbye!');
+
     process.exit(0);
   }
 }

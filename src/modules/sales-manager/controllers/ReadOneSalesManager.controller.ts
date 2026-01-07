@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { SalesManagerRepository } from "@/modules/sales-manager/model";
-import { showSalesManager } from "@/modules/sales-manager/view/showSalesManager.view";
+import { SalesManagerView } from '@/modules/sales-manager/view/SalesManager.view';
 
 export class ReadOneSalesManagerController extends ActionController {
-  private repository = this.makeRepository(SalesManagerRepository);
+  private salesManagerRepository = this.makeRepository(SalesManagerRepository);
+  private salesManagerView = this.makeView(SalesManagerView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter sales manager ID:',
@@ -14,19 +15,19 @@ export class ReadOneSalesManagerController extends ActionController {
     });
 
     if (!id) {
-      console.log('Cancelled.');
+      this.io.say('Cancelled.');
 
       return;
     }
 
-    const salesManager = await this.repository.findSalesManagerById(id);
+    const salesManager = await this.salesManagerRepository.findById(id);
 
     if (!salesManager) {
-      console.log(`Sales manager with id ${id} not found.`);
+      this.io.say(`Sales manager with id ${id} not found.`);
 
       return;
     }
 
-    showSalesManager(salesManager);
+    this.salesManagerView.one(salesManager);
   }
 }

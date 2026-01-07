@@ -2,11 +2,15 @@ import { Postgres } from '@/core/database';
 import { defined } from '@/lib/functional';
 import type { Sql } from 'postgres';
 
+export interface RepositoryContext {
+  db: Postgres;
+}
+
 export abstract class Repository {
   protected sql: Sql;
 
-  constructor(db: Postgres) {
-    this.sql = db.sql;
+  constructor(context: RepositoryContext) {
+    this.sql = context.db.sql;
   }
 
   protected updates(input: Record<string, unknown>) {
@@ -19,3 +23,7 @@ export abstract class Repository {
     return this.sql(updates);
   }
 }
+
+export type RepositoryConstructor<T extends Repository = Repository> = new (
+  context: RepositoryContext
+) => T;

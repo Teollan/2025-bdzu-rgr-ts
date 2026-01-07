@@ -1,20 +1,21 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { LeadRepository } from "@/modules/lead/model";
-import { showLeads } from "@/modules/lead/view/showLeads.view";
+import { LeadView } from '@/modules/lead/view/Lead.view';
 
 export class ReadAllLeadsController extends ActionController {
-  private repository = this.makeRepository(LeadRepository);
+  private leadRepository = this.makeRepository(LeadRepository);
+  private leadView = this.makeView(LeadView);
 
   async run(): Promise<void> {
-    const leads = await this.repository.getAllLeads({});
+    const leads = await this.leadRepository.list();
 
     if (leads.length === 0) {
-      console.log("No leads found.");
+      this.io.say("No leads found.");
 
       return;
     }
 
-    console.log("Leads found:");
-    showLeads(leads);
+    this.io.say("Leads found:");
+    this.leadView.many(leads);
   }
 }

@@ -1,26 +1,27 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { CompanyRepository } from "@/modules/company/model";
-import { showCompany } from '@/modules/company/view/showCompany.view';
+import { CompanyView } from '@/modules/company/view/Company.view';
 
 export class CreateCompanyController extends ActionController {
-  private repository = this.makeRepository(CompanyRepository);
+  private companyRepository = this.makeRepository(CompanyRepository);
+  private companyView = this.makeView(CompanyView);
 
   async run(): Promise<void> {
-    const { name } = await this.app.ask({
+    const { name } = await this.io.ask({
       name: 'name',
       type: 'text',
       message: 'Enter company name:',
     });
 
     if (!name) {
-      console.log('Company creation cancelled.');
+      this.io.say('Company creation cancelled.');
 
       return;
     }
 
-    const company = await this.repository.createCompany({ name });
+    const company = await this.companyRepository.create({ name });
 
-    console.log(`Company created with id ${company.id}`);
-    showCompany(company);
+    this.io.say(`Company created with id ${company.id}`);
+    this.companyView.one(company);
   }
 }

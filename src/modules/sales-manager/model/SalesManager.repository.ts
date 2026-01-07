@@ -2,7 +2,7 @@ import { PaginationParams, Repository } from "@/core/repository";
 import { CreateSalesManagerFields, SalesManager, UpdateSalesManagerFields } from "@/modules/sales-manager/model/SalesManager.entity.ts";
 
 export class SalesManagerRepository extends Repository {
-  async findSalesManagerById(id: number): Promise<SalesManager | null> {
+  async findById(id: number): Promise<SalesManager | null> {
     const result = await this.sql<SalesManager[]>`
       SELECT *
       FROM sales_managers
@@ -16,10 +16,10 @@ export class SalesManagerRepository extends Repository {
     return result[0];
   }
 
-  async getAllSalesManagers({
+  async list({
     limit = 20,
     offset = 0,
-  }: PaginationParams): Promise<SalesManager[]> {
+  }: PaginationParams = {}): Promise<SalesManager[]> {
     return this.sql<SalesManager[]>`
       SELECT *
       FROM sales_managers
@@ -28,7 +28,7 @@ export class SalesManagerRepository extends Repository {
     `;
   }
 
-  async createSalesManager({
+  async create({
     companyId,
     firstName,
     lastName
@@ -42,7 +42,7 @@ export class SalesManagerRepository extends Repository {
     return result[0];
   }
 
-  async updateSalesManager(
+  async update(
     id: number,
     fields: UpdateSalesManagerFields,
   ): Promise<SalesManager> {
@@ -60,7 +60,7 @@ export class SalesManagerRepository extends Repository {
     return result[0];
   }
 
-  async deleteSalesManager(id: number): Promise<SalesManager> {
+  async delete(id: number): Promise<SalesManager> {
     const result = await this.sql<SalesManager[]>`
       DELETE
       FROM sales_managers

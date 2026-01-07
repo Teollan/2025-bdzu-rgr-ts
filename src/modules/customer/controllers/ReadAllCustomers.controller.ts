@@ -1,20 +1,21 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { CustomerRepository } from "@/modules/customer/model";
-import { showCustomers } from "@/modules/customer/view/showCustomers.view";
+import { CustomerView } from '@/modules/customer/view/Customer.view';
 
 export class ReadAllCustomersController extends ActionController {
-  private repository = this.makeRepository(CustomerRepository);
+  private customerRepository = this.makeRepository(CustomerRepository);
+  private customerView = this.makeView(CustomerView);
 
   async run(): Promise<void> {
-    const customers = await this.repository.getAllCustomers({});
+    const customers = await this.customerRepository.list();
 
     if (customers.length === 0) {
-      console.log("No customers found.");
+      this.io.say("No customers found.");
 
       return;
     }
 
-    console.log("Customers found:");
-    showCustomers(customers);
+    this.io.say("Customers found:");
+    this.customerView.many(customers);
   }
 }

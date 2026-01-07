@@ -1,8 +1,9 @@
+import { App } from '@/core/app/App';
 import { NavigationController } from '@/core/controller/NavigationController';
 
 export class HomeScreenController extends NavigationController {
   public async run(): Promise<void> {
-    const { route } = await this.app.ask({
+    const { route } = await this.io.ask({
       name: 'route',
       type: 'select',
       message: 'What would you like to do?',
@@ -16,9 +17,9 @@ export class HomeScreenController extends NavigationController {
     });
 
     if (!route) {
-      await this.app.stop();
+      await App.stop();
     }
 
-    await this.app.router.navigate(route);
+    await this.router.navigate(route);
   }
 }

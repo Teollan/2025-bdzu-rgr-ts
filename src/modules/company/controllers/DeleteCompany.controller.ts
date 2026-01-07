@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { CompanyRepository } from "@/modules/company/model";
-import { showCompany } from '@/modules/company/view/showCompany.view';
+import { CompanyView } from '@/modules/company/view/Company.view';
 
 export class DeleteCompanyController extends ActionController {
-  private repository = this.makeRepository(CompanyRepository);
+  private companyRepository = this.makeRepository(CompanyRepository);
+  private companyView = this.makeView(CompanyView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter company ID to delete:',
@@ -14,14 +15,14 @@ export class DeleteCompanyController extends ActionController {
     });
 
     if (!id) {
-      console.log('Deletion cancelled.');
+      this.io.say('Deletion cancelled.');
 
       return;
     }
 
-    const company = await this.repository.deleteCompany(id);
+    const company = await this.companyRepository.delete(id);
 
-    console.log(`Company ${company.id} deleted successfully`);
-    showCompany(company);
+    this.io.say(`Company ${company.id} deleted successfully`);
+    this.companyView.one(company);
   }
 }

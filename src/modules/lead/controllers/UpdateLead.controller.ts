@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { LeadRepository, LeadStatus, UpdateLeadFields } from "@/modules/lead/model";
-import { showLead } from '@/modules/lead/view/showLead.view';
+import { LeadView } from '@/modules/lead/view/Lead.view';
 
 export class UpdateLeadController extends ActionController {
-  private repository = this.makeRepository(LeadRepository);
+  private leadRepository = this.makeRepository(LeadRepository);
+  private leadView = this.makeView(LeadView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter lead ID to update:',
@@ -14,24 +15,24 @@ export class UpdateLeadController extends ActionController {
     });
 
     if (!id) {
-      console.log('Update cancelled.');
+      this.io.say('Update cancelled.');
 
       return;
     }
 
-    const { companyId } = await this.app.ask({
+    const { companyId } = await this.io.ask({
       name: 'companyId',
       type: 'number',
       message: 'Enter new company ID (leave empty to skip):',
     });
 
-    const { customerId } = await this.app.ask({
+    const { customerId } = await this.io.ask({
       name: 'customerId',
       type: 'number',
       message: 'Enter new customer ID (leave empty to skip):',
     });
 
-    const { status } = await this.app.ask({
+    const { status } = await this.io.ask({
       name: 'status',
       type: 'select',
       message: 'Select new status (or skip):',
@@ -51,14 +52,14 @@ export class UpdateLeadController extends ActionController {
     if (status) updates.status = status;
 
     if (Object.keys(updates).length === 0) {
-      console.log('No changes made.');
+      this.io.say('No changes made.');
 
       return;
     }
 
-    const lead = await this.repository.updateLead(id, updates);
+    const lead = await this.leadRepository.update(id, updates);
 
-    console.log(`Lead ${lead.id} updated successfully`);
-    showLead(lead);
+    this.io.say(`Lead ${lead.id} updated successfully`);
+    this.leadView.one(lead);
   }
 }

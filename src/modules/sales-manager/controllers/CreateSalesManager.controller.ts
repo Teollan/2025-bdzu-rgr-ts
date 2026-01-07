@@ -1,54 +1,55 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { SalesManagerRepository } from "@/modules/sales-manager/model";
-import { showSalesManager } from '@/modules/sales-manager/view/showSalesManager.view';
+import { SalesManagerView } from '@/modules/sales-manager/view/SalesManager.view';
 
 export class CreateSalesManagerController extends ActionController {
-  private repository = this.makeRepository(SalesManagerRepository);
+  private salesManagerRepository = this.makeRepository(SalesManagerRepository);
+  private salesManagerView = this.makeView(SalesManagerView);
 
   async run(): Promise<void> {
-    const { companyId } = await this.app.ask({
+    const { companyId } = await this.io.ask({
       name: 'companyId',
       type: 'number',
       message: 'Enter company ID:',
     });
 
     if (!companyId) {
-      console.log('Sales manager creation cancelled.');
+      this.io.say('Sales manager creation cancelled.');
 
       return;
     }
 
-    const { firstName } = await this.app.ask({
+    const { firstName } = await this.io.ask({
       name: 'firstName',
       type: 'text',
       message: 'Enter first name:',
     });
 
     if (!firstName) {
-      console.log('Sales manager creation cancelled.');
+      this.io.say('Sales manager creation cancelled.');
 
       return;
     }
 
-    const { lastName } = await this.app.ask({
+    const { lastName } = await this.io.ask({
       name: 'lastName',
       type: 'text',
       message: 'Enter last name:',
     });
 
     if (!lastName) {
-      console.log('Sales manager creation cancelled.');
+      this.io.say('Sales manager creation cancelled.');
 
       return;
     }
 
-    const salesManager = await this.repository.createSalesManager({
+    const salesManager = await this.salesManagerRepository.create({
       companyId,
       firstName,
       lastName,
     });
 
-    console.log(`Sales manager created with id ${salesManager.id}`);
-    showSalesManager(salesManager);
+    this.io.say(`Sales manager created with id ${salesManager.id}`);
+    this.salesManagerView.one(salesManager);
   }
 }

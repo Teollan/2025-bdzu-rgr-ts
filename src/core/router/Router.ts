@@ -1,8 +1,8 @@
-import { Controller } from '@/core/controller';
+import { Controller, ControllerConstructor, ControllerContext } from '@/core/controller';
 
 interface Route {
   name: string;
-  controller: Controller;
+  ControllerClass: ControllerConstructor<Controller>;
   children?: Route[];
 }
 
@@ -30,7 +30,7 @@ export class Router {
     this.history.push(this.root.name);
   }
 
-  public navigate(pathname: string): void {
+  public navigate(pathname: string) {
     const route = this.resolve(pathname);
 
     if (!route) {
@@ -40,7 +40,7 @@ export class Router {
     this.history.push(pathname);
   }
 
-  public back(): void {
+  public back() {
     this.history.pop();
 
     if (this.history.length === 0) {
@@ -48,7 +48,7 @@ export class Router {
     }
   }
 
-  private resolve(pathname: string): Route | null {
+  public resolve(pathname: string): Route | null {
     const segments = pathname.split('/');
 
     const traverse = (
@@ -70,5 +70,13 @@ export class Router {
     };
 
     return traverse(this.root, 0);
+  }
+
+  public async invoke(context: ControllerContext) {
+    const { ControllerClass } = this.currentRoute;
+
+    const controller = new ControllerClass(context);
+
+    await controller.invoke();
   }
 }

@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { SalesManagerRepository } from "@/modules/sales-manager/model";
-import { showSalesManager } from '@/modules/sales-manager/view/showSalesManager.view';
+import { SalesManagerView } from '@/modules/sales-manager/view/SalesManager.view';
 
 export class DeleteSalesManagerController extends ActionController {
-  private repository = this.makeRepository(SalesManagerRepository);
+  private salesManagerRepository = this.makeRepository(SalesManagerRepository);
+  private salesManagerView = this.makeView(SalesManagerView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter sales manager ID to delete:',
@@ -14,14 +15,14 @@ export class DeleteSalesManagerController extends ActionController {
     });
 
     if (!id) {
-      console.log('Deletion cancelled.');
+      this.io.say('Deletion cancelled.');
 
       return;
     }
 
-    const salesManager = await this.repository.deleteSalesManager(id);
+    const salesManager = await this.salesManagerRepository.delete(id);
 
-    console.log(`Sales manager ${salesManager.id} deleted successfully`);
-    showSalesManager(salesManager);
+    this.io.say(`Sales manager ${salesManager.id} deleted successfully`);
+    this.salesManagerView.one(salesManager);
   }
 }

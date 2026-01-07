@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { CustomerRepository } from "@/modules/customer/model";
-import { showCustomer } from '@/modules/customer/view/showCustomer.view';
+import { CustomerView } from '@/modules/customer/view/Customer.view';
 
 export class DeleteCustomerController extends ActionController {
-  private repository = this.makeRepository(CustomerRepository);
+  private customerRepository = this.makeRepository(CustomerRepository);
+  private customerView = this.makeView(CustomerView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter customer ID to delete:',
@@ -14,14 +15,14 @@ export class DeleteCustomerController extends ActionController {
     });
 
     if (!id) {
-      console.log('Deletion cancelled.');
+      this.io.say('Deletion cancelled.');
 
       return;
     }
 
-    const customer = await this.repository.deleteCustomer(id);
+    const customer = await this.customerRepository.delete(id);
 
-    console.log(`Customer ${customer.id} deleted successfully`);
-    showCustomer(customer);
+    this.io.say(`Customer ${customer.id} deleted successfully`);
+    this.customerView.one(customer);
   }
 }

@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { CompanyRepository } from "@/modules/company/model";
-import { showCompany } from "@/modules/company/view/showCompany.view";
+import { CompanyView } from '@/modules/company/view/Company.view';
 
 export class ReadOneCompanyController extends ActionController {
-  private repository = this.makeRepository(CompanyRepository);
+  private companyRepository = this.makeRepository(CompanyRepository);
+  private companyView = this.makeView(CompanyView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter company ID:',
@@ -14,19 +15,19 @@ export class ReadOneCompanyController extends ActionController {
     });
 
     if (!id) {
-      console.log('Cancelled.');
+      this.io.say('Cancelled.');
 
       return;
     }
 
-    const company = await this.repository.findCompanyById(id);
+    const company = await this.companyRepository.findById(id);
 
     if (!company) {
-      console.log(`Company with id ${id} not found.`);
+      this.io.say(`Company with id ${id} not found.`);
 
       return;
     }
 
-    showCompany(company);
+    this.companyView.one(company);
   }
 }

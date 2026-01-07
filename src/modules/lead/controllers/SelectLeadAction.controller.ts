@@ -2,7 +2,7 @@ import { NavigationController } from '@/core/controller/NavigationController';
 
 export class SelectLeadActionController extends NavigationController {
   async run(): Promise<void> {
-    const { route } = await this.app.ask({
+    const { route } = await this.io.ask({
       name: 'route',
       type: 'select',
       message: 'You are managing Leads. What would you like to do?',
@@ -17,9 +17,9 @@ export class SelectLeadActionController extends NavigationController {
     });
 
     if (!route) {
-      await this.app.router.back();
+      await this.router.back();
     }
 
-    await this.app.router.navigate(route);
+    await this.router.navigate(route);
   }
 }

@@ -2,7 +2,7 @@ import { PaginationParams, Repository } from "@/core/repository";
 import { CreateCustomerFields, Customer, UpdateCustomerFields } from "@/modules/customer/model/Customer.entity.ts";
 
 export class CustomerRepository extends Repository {
-  async findCustomerById(id: number): Promise<Customer | null> {
+  async findById(id: number): Promise<Customer | null> {
     const result = await this.sql<Customer[]>`
       SELECT *
       FROM customers
@@ -16,16 +16,16 @@ export class CustomerRepository extends Repository {
     return result[0];
   }
 
-  async getAllCustomers({
+  async list({
     limit = 20,
     offset = 0,
-  }: PaginationParams): Promise<Customer[]> {
+  }: PaginationParams = {}): Promise<Customer[]> {
     return this.sql<Customer[]>`
       SELECT * FROM customers LIMIT ${limit} OFFSET ${offset}
     `;
   }
 
-  async createCustomer({
+  async create({
     firstName,
     lastName,
     phoneNumber,
@@ -40,7 +40,7 @@ export class CustomerRepository extends Repository {
     return result[0];
   }
 
-  async updateCustomer(
+  async update(
     id: number,
     fields: UpdateCustomerFields,
   ): Promise<Customer> {
@@ -58,7 +58,7 @@ export class CustomerRepository extends Repository {
     return result[0];
   }
 
-  async deleteCustomer(id: number): Promise<Customer> {
+  async delete(id: number): Promise<Customer> {
     const result = await this.sql<Customer[]>`
       DELETE
       FROM customers

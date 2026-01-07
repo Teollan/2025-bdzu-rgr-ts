@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { LeadRepository } from "@/modules/lead/model";
-import { showLead } from "@/modules/lead/view/showLead.view";
+import { LeadView } from '@/modules/lead/view/Lead.view';
 
 export class ReadOneLeadController extends ActionController {
-  private repository = this.makeRepository(LeadRepository);
+  private leadRepository = this.makeRepository(LeadRepository);
+  private leadView = this.makeView(LeadView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter lead ID:',
@@ -14,19 +15,19 @@ export class ReadOneLeadController extends ActionController {
     });
 
     if (!id) {
-      console.log('Cancelled.');
+      this.io.say('Cancelled.');
 
       return;
     }
 
-    const lead = await this.repository.findLeadById(id);
+    const lead = await this.leadRepository.findById(id);
 
     if (!lead) {
-      console.log(`Lead with id ${id} not found.`);
+      this.io.say(`Lead with id ${id} not found.`);
 
       return;
     }
 
-    showLead(lead);
+    this.leadView.one(lead);
   }
 }

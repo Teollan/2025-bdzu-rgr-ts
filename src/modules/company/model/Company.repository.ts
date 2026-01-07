@@ -2,7 +2,7 @@ import { PaginationParams, Repository } from "@/core/repository";
 import { Company, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/model/Company.entity.ts";
 
 export class CompanyRepository extends Repository {
-  async findCompanyById(id: number): Promise<Company | null> {
+  async findById(id: number): Promise<Company | null> {
     const result = await this.sql<Company[]>`
       SELECT *
       FROM companies
@@ -16,17 +16,7 @@ export class CompanyRepository extends Repository {
     return result[0];
   }
 
-  async findCompaniesByName(name: string): Promise<Company[]> {
-    const pattern = `%${name}%`;
-
-    return this.sql<Company[]>`
-      SELECT *
-      FROM companies
-      WHERE name ILIKE ${pattern}
-    `;
-  }
-
-  async getAllCompanies({
+  async list({
     limit = 20,
     offset = 0,
   }: PaginationParams = {}): Promise<Company[]> {
@@ -38,7 +28,7 @@ export class CompanyRepository extends Repository {
     `;
   }
 
-  async createCompany({
+  async create({
     name
   }: CreateCompanyFields): Promise<Company> {
     const result = await this.sql<Company[]>`
@@ -50,7 +40,7 @@ export class CompanyRepository extends Repository {
     return result[0];
   }
 
-  async updateCompany(
+  async update(
     id: number,
     fields: UpdateCompanyFields,
   ): Promise<Company> {
@@ -68,7 +58,7 @@ export class CompanyRepository extends Repository {
     return result[0];
   }
 
-  async deleteCompany(id: number): Promise<Company> {
+  async delete(id: number): Promise<Company> {
     const result = await this.sql<Company[]>`
       DELETE
       FROM companies

@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { LeadRepository, LeadStatus } from "@/modules/lead/model";
-import { showLead } from '@/modules/lead/view/showLead.view';
+import { LeadView } from '@/modules/lead/view/Lead.view';
 
 export class CreateLeadController extends ActionController {
-  private repository = this.makeRepository(LeadRepository);
+  private leadRepository = this.makeRepository(LeadRepository);
+  private leadView = this.makeView(LeadView);
 
   async run(): Promise<void> {
-    const { companyId } = await this.app.ask({
+    const { companyId } = await this.io.ask({
       name: 'companyId',
       type: 'number',
       message: 'Enter company ID:',
@@ -14,12 +15,12 @@ export class CreateLeadController extends ActionController {
     });
 
     if (!companyId) {
-      console.log('Lead creation cancelled.');
+      this.io.say('Lead creation cancelled.');
 
       return;
     }
 
-    const { customerId } = await this.app.ask({
+    const { customerId } = await this.io.ask({
       name: 'customerId',
       type: 'number',
       message: 'Enter customer ID:',
@@ -27,12 +28,12 @@ export class CreateLeadController extends ActionController {
     });
 
     if (!customerId) {
-      console.log('Lead creation cancelled.');
+      this.io.say('Lead creation cancelled.');
 
       return;
     }
 
-    const { status } = await this.app.ask({
+    const { status } = await this.io.ask({
       name: 'status',
       type: 'select',
       message: 'Select lead status:',
@@ -44,13 +45,13 @@ export class CreateLeadController extends ActionController {
       ],
     });
 
-    const lead = await this.repository.createLead({
+    const lead = await this.leadRepository.create({
       companyId,
       customerId,
       status,
     });
 
-    console.log(`Lead created with id ${lead.id}`);
-    showLead(lead);
+    this.io.say(`Lead created with id ${lead.id}`);
+    this.leadView.one(lead);
   }
 }

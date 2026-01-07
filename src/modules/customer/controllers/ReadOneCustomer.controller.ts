@@ -1,12 +1,13 @@
 import { ActionController } from '@/core/controller/ActionController';
 import { CustomerRepository } from "@/modules/customer/model";
-import { showCustomer } from "@/modules/customer/view/showCustomer.view";
+import { CustomerView } from '@/modules/customer/view/Customer.view';
 
 export class ReadOneCustomerController extends ActionController {
-  private repository = this.makeRepository(CustomerRepository);
+  private customerRepository = this.makeRepository(CustomerRepository);
+  private customerView = this.makeView(CustomerView);
 
   async run(): Promise<void> {
-    const { id } = await this.app.ask({
+    const { id } = await this.io.ask({
       name: 'id',
       type: 'number',
       message: 'Enter customer ID:',
@@ -14,19 +15,19 @@ export class ReadOneCustomerController extends ActionController {
     });
 
     if (!id) {
-      console.log('Cancelled.');
+      this.io.say('Cancelled.');
 
       return;
     }
 
-    const customer = await this.repository.findCustomerById(id);
+    const customer = await this.customerRepository.findById(id);
 
     if (!customer) {
-      console.log(`Customer with id ${id} not found.`);
+      this.io.say(`Customer with id ${id} not found.`);
 
       return;
     }
 
-    showCustomer(customer);
+    this.customerView.one(customer);
   }
 }
