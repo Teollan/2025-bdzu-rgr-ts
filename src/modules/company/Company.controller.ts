@@ -43,16 +43,49 @@ export class CompanyController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    const companies = await this.repository.list();
+    let result = await this.repository.list();
 
-    if (companies.length === 0) {
-      this.io.say('No companies found.');
+    while (true) {
+      const { items, limit, offset, next, prev } = result;
+      const page = Math.floor(offset / limit) + 1;
 
-      return;
+      if (items.length === 0) {
+        this.io.say('No companies found.');
+
+        return;
+      }
+
+      this.io.say(`Companies found (page ${page}):`);
+      this.view.many(items);
+
+      const { action } = await this.io.ask({
+        name: 'action',
+        type: 'select',
+        message: 'What would you like to do next?',
+        choices: [
+          {
+            title: 'Previous Page',
+            value: prev,
+            disabled: !prev,
+          },
+          {
+            title: 'Next Page',
+            value: next,
+            disabled: !next,
+          },
+          {
+            title: 'Done',
+            value: null,
+          },
+        ],
+      });
+
+      if (!action) {
+        break;
+      }
+
+      result = await action();
     }
-
-    this.io.say('Companies found:');
-    this.view.many(companies);
   }
 
   private find = async (): Promise<void> => {

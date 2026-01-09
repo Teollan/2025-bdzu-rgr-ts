@@ -1,4 +1,4 @@
-import { PaginationParams, Repository } from "@/core/repository";
+import { paginated, PaginatedResult, PaginationParams, Repository } from "@/core/repository";
 import { CreateCustomerFields, Customer, UpdateCustomerFields } from "@/modules/customer/Customer.entity";
 
 export class CustomerRepository extends Repository {
@@ -16,13 +16,20 @@ export class CustomerRepository extends Repository {
     return result[0];
   }
 
+  @paginated
   async list({
     limit = 20,
     offset = 0,
-  }: PaginationParams = {}): Promise<Customer[]> {
-    return this.sql<Customer[]>`
+  }: PaginationParams = {}): Promise<PaginatedResult<Customer>> {
+    const result = await this.sql<Customer[]>`
       SELECT * FROM customers LIMIT ${limit} OFFSET ${offset}
     `;
+
+    return {
+      items: result,
+      limit,
+      offset,
+    };
   }
 
   async create({

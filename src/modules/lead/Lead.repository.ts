@@ -1,4 +1,4 @@
-import { PaginationParams, Repository } from "@/core/repository";
+import { paginated, PaginatedResult, PaginationParams, Repository } from "@/core/repository";
 import { CreateLeadFields, Lead, UpdateLeadFields } from "@/modules/lead/Lead.entity";
 
 export class LeadRepository extends Repository {
@@ -16,16 +16,23 @@ export class LeadRepository extends Repository {
     return result[0];
   }
 
+  @paginated
   async list({
     limit = 20,
     offset = 0,
-  }: PaginationParams = {}): Promise<Lead[]> {
-    return this.sql<Lead[]>`
+  }: PaginationParams = {}): Promise<PaginatedResult<Lead>> {
+    const result = await this.sql<Lead[]>`
       SELECT *
       FROM leads
       LIMIT ${limit}
       OFFSET ${offset}
     `;
+
+    return {
+      items: result,
+      limit,
+      offset,
+    };
   }
 
   async create({

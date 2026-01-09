@@ -1,4 +1,4 @@
-import { PaginationParams, Repository } from "@/core/repository";
+import { paginated, PaginatedResult, PaginationParams, Repository } from "@/core/repository";
 import { Company, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/Company.entity";
 
 export class CompanyRepository extends Repository {
@@ -16,16 +16,23 @@ export class CompanyRepository extends Repository {
     return result[0];
   }
 
+  @paginated
   async list({
     limit = 20,
     offset = 0,
-  }: PaginationParams = {}): Promise<Company[]> {
-    return this.sql<Company[]>`
+  }: PaginationParams = {}): Promise<PaginatedResult<Company>> {
+    const result = await this.sql<Company[]>`
       SELECT *
       FROM companies
       LIMIT ${limit}
       OFFSET ${offset}
     `;
+
+    return {
+      items: result,
+      limit,
+      offset,
+    };
   }
 
   async create({

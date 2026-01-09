@@ -1,4 +1,4 @@
-import { PaginationParams, Repository } from "@/core/repository";
+import { paginated, PaginatedResult, PaginationParams, Repository } from "@/core/repository";
 import { CreateSalesManagerFields, SalesManager, UpdateSalesManagerFields } from "@/modules/sales-manager/SalesManager.entity";
 
 export class SalesManagerRepository extends Repository {
@@ -16,16 +16,23 @@ export class SalesManagerRepository extends Repository {
     return result[0];
   }
 
+  @paginated
   async list({
     limit = 20,
     offset = 0,
-  }: PaginationParams = {}): Promise<SalesManager[]> {
-    return this.sql<SalesManager[]>`
+  }: PaginationParams = {}): Promise<PaginatedResult<SalesManager>> {
+    const result = await this.sql<SalesManager[]>`
       SELECT *
       FROM sales_managers
       LIMIT ${limit}
       OFFSET ${offset}
     `;
+
+    return {
+      items: result,
+      limit,
+      offset,
+    };
   }
 
   async create({

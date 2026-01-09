@@ -43,16 +43,49 @@ export class SalesManagerController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    const salesManagers = await this.repository.list();
+    let result = await this.repository.list();
 
-    if (salesManagers.length === 0) {
-      this.io.say('No sales managers found.');
+    while (true) {
+      const { items, limit, offset, next, prev } = result;
+      const page = Math.floor(offset / limit) + 1;
 
-      return;
+      if (items.length === 0) {
+        this.io.say('No sales managers found.');
+
+        return;
+      }
+
+      this.io.say(`Sales managers found (page ${page}):`);
+      this.view.many(items);
+
+      const { action } = await this.io.ask({
+        name: 'action',
+        type: 'select',
+        message: 'What would you like to do next?',
+        choices: [
+          {
+            title: 'Previous Page',
+            value: prev,
+            disabled: !prev,
+          },
+          {
+            title: 'Next Page',
+            value: next,
+            disabled: !next,
+          },
+          {
+            title: 'Done',
+            value: null,
+          },
+        ],
+      });
+
+      if (!action) {
+        break;
+      }
+
+      result = await action();
     }
-
-    this.io.say('Sales managers found:');
-    this.view.many(salesManagers);
   }
 
   private find = async (): Promise<void> => {
