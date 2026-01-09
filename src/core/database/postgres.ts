@@ -2,32 +2,45 @@ import { Environment } from '@/core/environment';
 import postgres, { type Sql } from "postgres";
 
 export class Postgres {
-  static instance: Sql | null = null;
+  private instance: Sql | null = null;
 
   async connect(): Promise<void> {
-    Postgres.instance = postgres({
+    if (this.instance) {
+      throw new Error("Database already connected. Call Postgres.disconnect() first.");
+    }
+
+    this.instance = postgres({
       host: Environment.dbHost,
       port: Environment.dbPort,
       database: Environment.dbName,
       username: Environment.dbUsername,
       password: Environment.dbPassword,
       transform: postgres.camel,
+      debug: (
+        Environment.isDebugMode
+          ? (_, query, params) => {
+            console.debug('[DEBUG] SQL');
+            console.debug('QUERY:', query.replace(/\s+/g, ' ').trim());
+            console.debug('Parameters:', params);
+          }
+          : undefined
+      ),
     });
   }
 
   async disconnect(): Promise<void> {
-    if (Postgres.instance) {
-      await Postgres.instance.end();
+    if (this.instance) {
+      await this.instance.end();
 
-      Postgres.instance = null;
+      this.instance = null;
     }
   }
 
   get sql(): Sql {
-    if (!Postgres.instance) {
+    if (!this.instance) {
       throw new Error("Database not connected. Call Postgres.connect() first.");
     }
 
-    return Postgres.instance;
+    return this.instance;
   }
 }

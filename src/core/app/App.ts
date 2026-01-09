@@ -46,7 +46,11 @@ export abstract class App {
 
     while (true) {
       try {
-        const context = { db, io, router };
+        const context = {
+          db,
+          io,
+          router,
+        };
 
         await router.invoke(context);
       } catch (error) {
