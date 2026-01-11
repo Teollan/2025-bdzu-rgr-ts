@@ -21,19 +21,23 @@ export class LeadController extends Controller {
           title: 'Find by ID',
           value: () => this.find(),
         },
-        { 
+        {
           title: 'Create',
           value: () => this.create(),
         },
-        { 
+        {
+          title: 'Create Random',
+          value: () => this.createRandom(),
+        },
+        {
           title: 'Update',
           value: () => this.update(),
         },
-        { 
+        {
           title: 'Delete',
           value: () => this.delete(),
         },
-        { 
+        {
           title: 'Go Back',
           value: () => this.router.back(),
         },
@@ -218,6 +222,60 @@ export class LeadController extends Controller {
 
     this.io.say(`Lead ${lead.id} updated successfully`);
     this.view.one(lead);
+  }
+
+  private createRandom = async (): Promise<void> => {
+    const { count } = await this.io.ask({
+      name: 'count',
+      type: 'number',
+      message: 'How many random leads to create?',
+      min: 1,
+      max: 250000,
+    });
+
+    if (!count) {
+      this.io.say('Cancelled.');
+
+      return;
+    }
+
+    let result = await this.repository.createRandom(count);
+
+    while (true) {
+      const { items, limit, offset, next, prev } = result;
+      const page = Math.floor(offset / limit) + 1;
+
+      this.io.say(`Created ${count} leads (page ${page}):`);
+      this.view.many(items);
+
+      const { action } = await this.io.ask({
+        name: 'action',
+        type: 'select',
+        message: 'What would you like to do next?',
+        choices: [
+          {
+            title: 'Previous Page',
+            value: prev,
+            disabled: !prev,
+          },
+          {
+            title: 'Next Page',
+            value: next,
+            disabled: !next,
+          },
+          {
+            title: 'Done',
+            value: null,
+          },
+        ],
+      });
+
+      if (!action) {
+        break;
+      }
+
+      result = await action();
+    }
   }
 
   private delete = async (): Promise<void> => {

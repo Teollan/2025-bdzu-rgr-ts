@@ -1,6 +1,10 @@
 -- Create Lead Status enum
-DROP TYPE IF EXISTS LEAD_STATUS;
-CREATE TYPE LEAD_STATUS AS ENUM ('PENDING', 'IN_PROGRESS', 'WON', 'LOST');
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'lead_status') THEN
+        CREATE TYPE LEAD_STATUS AS ENUM ('PENDING', 'IN_PROGRESS', 'WON', 'LOST');
+    END IF;
+END $$;
 
 -- Create Companies table
 CREATE TABLE IF NOT EXISTS companies (
@@ -30,7 +34,7 @@ CREATE TABLE IF NOT EXISTS leads (
     id SERIAL PRIMARY KEY,
     company_id INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
     customer_id INT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
-    status LEAD_STATUS NOT NULL,
+    status LEAD_STATUS DEFAULT 'PENDING' NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
@@ -39,4 +43,29 @@ CREATE TABLE IF NOT EXISTS sales_manager_leads (
     sales_manager_id INT NOT NULL REFERENCES sales_managers(id) ON DELETE CASCADE,
     lead_id INT NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
     PRIMARY KEY (sales_manager_id, lead_id)
+);
+
+-- Util tables for random data generation
+CREATE TABLE IF NOT EXISTS first_names (
+    first_name VARCHAR(50) PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS last_names (
+    last_name VARCHAR(50) PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS email_domains (
+    domain VARCHAR(50) PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS adjectives (
+    adjective VARCHAR(50) PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS nouns (
+    noun VARCHAR(50) PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS designators (
+    designator VARCHAR(50) PRIMARY KEY
 );

@@ -1,4 +1,5 @@
-import { paginated, PaginatedResult, PaginationParams, Repository } from "@/core/repository";
+import { Repository } from "@/core/repository/Repository";
+import { paginate, pseudoPaginate, Paginated } from "@/lib/pagination";
 import { CreateSalesManagerFields, SalesManager, UpdateSalesManagerFields } from "@/modules/sales-manager/SalesManager.entity";
 
 export class SalesManagerRepository extends Repository {
@@ -16,23 +17,13 @@ export class SalesManagerRepository extends Repository {
     return result[0];
   }
 
-  @paginated
-  async list({
-    limit = 20,
-    offset = 0,
-  }: PaginationParams = {}): Promise<PaginatedResult<SalesManager>> {
-    const result = await this.sql<SalesManager[]>`
+  list(): Promise<Paginated<SalesManager>> {
+    return paginate(({ limit, offset }) => this.sql<SalesManager[]>`
       SELECT *
       FROM sales_managers
       LIMIT ${limit}
       OFFSET ${offset}
-    `;
-
-    return {
-      items: result,
-      limit,
-      offset,
-    };
+    `);
   }
 
   async create({
@@ -47,6 +38,22 @@ export class SalesManagerRepository extends Repository {
     `;
 
     return result[0];
+  }
+
+  createRandom(count: number): Promise<Paginated<SalesManager>> {
+    return pseudoPaginate(() => this.sql<SalesManager[]>`
+      WITH
+        random_first_names AS (SELECT first_name FROM first_names ORDER BY random()),
+        random_last_names AS (SELECT last_name FROM last_names ORDER BY random()),
+        random_company_ids AS (SELECT id AS company_id FROM companies ORDER BY random())
+      INSERT INTO sales_managers (first_name, last_name, company_id)
+      SELECT
+        (SELECT first_name FROM random_first_names OFFSET (i % (SELECT count(*) FROM random_first_names)) LIMIT 1),
+        (SELECT last_name FROM random_last_names OFFSET (i % (SELECT count(*) FROM random_last_names)) LIMIT 1),
+        (SELECT company_id FROM random_company_ids OFFSET (i % (SELECT count(*) FROM random_company_ids)) LIMIT 1)
+      FROM generate_series(1, ${count}) i
+      RETURNING *
+    `);
   }
 
   async update(

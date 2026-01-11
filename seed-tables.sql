@@ -8,16 +8,16 @@ INSERT INTO companies (name) VALUES
 
 -- Seed Customers
 INSERT INTO customers (first_name, last_name, phone_number, email) VALUES
-    ('John', 'Smith', '+1234567890', 'john.smith@email.com'),
-    ('Emily', 'Johnson', '+1234567891', 'emily.johnson@email.com'),
-    ('Michael', 'Brown', '+1234567892', 'michael.brown@email.com'),
-    ('Sarah', 'Davis', '+1234567893', 'sarah.davis@email.com'),
-    ('David', 'Wilson', '+1234567894', 'david.wilson@email.com'),
-    ('Jessica', 'Martinez', '+1234567895', 'jessica.martinez@email.com'),
-    ('Daniel', 'Anderson', '+1234567896', 'daniel.anderson@email.com'),
-    ('Ashley', 'Taylor', '+1234567897', 'ashley.taylor@email.com'),
-    ('James', 'Thomas', '+1234567898', 'james.thomas@email.com'),
-    ('Amanda', 'Garcia', '+1234567899', 'amanda.garcia@email.com');
+    ('John', 'Smith', '3804567890', 'john.smith@email.com'),
+    ('Emily', 'Johnson', '3804567891', 'emily.johnson@email.com'),
+    ('Michael', 'Brown', '3804567892', 'michael.brown@email.com'),
+    ('Sarah', 'Davis', '3804567893', 'sarah.davis@email.com'),
+    ('David', 'Wilson', '3804567894', 'david.wilson@email.com'),
+    ('Jessica', 'Martinez', '3804567895', 'jessica.martinez@email.com'),
+    ('Daniel', 'Anderson', '3804567896', 'daniel.anderson@email.com'),
+    ('Ashley', 'Taylor', '3804567897', 'ashley.taylor@email.com'),
+    ('James', 'Thomas', '3804567898', 'james.thomas@email.com'),
+    ('Amanda', 'Garcia', '3804567899', 'amanda.garcia@email.com');
 
 -- Seed Sales Managers
 INSERT INTO sales_managers (company_id, first_name, last_name) VALUES
@@ -54,3 +54,48 @@ INSERT INTO sales_manager_leads (sales_manager_id, lead_id) VALUES
     (6, 8),
     (6, 9),
     (7, 10);
+
+-- Seed util tables for random data generation
+INSERT INTO first_names (first_name) VALUES
+    ('James'), ('John'), ('Robert'), ('Michael'), ('William'),
+    ('David'), ('Richard'), ('Joseph'), ('Thomas'), ('Charles'),
+    ('Christopher'), ('Daniel'), ('Matthew'), ('Anthony'), ('Donald'),
+    ('Mark'), ('Paul'), ('Steven'), ('Andrew'), ('Kenneth'),
+    ('Mary'), ('Patricia'), ('Jennifer'), ('Linda'), ('Elizabeth'),
+    ('Barbara'), ('Susan'), ('Jessica'), ('Sarah'), ('Karen'),
+    ('Nancy'), ('Lisa'), ('Margaret'), ('Betty'), ('Sandra'),
+    ('Ashley'), ('Dorothy'), ('Kimberly'), ('Emily'), ('Donna');
+
+INSERT INTO last_names (last_name) VALUES
+    ('Smith'), ('Johnson'), ('Williams'), ('Brown'), ('Jones'),
+    ('Garcia'), ('Miller'), ('Davis'), ('Rodriguez'), ('Martinez'),
+    ('Hernandez'), ('Lopez'), ('Gonzalez'), ('Wilson'), ('Anderson'),
+    ('Thomas'), ('Taylor'), ('Moore'), ('Jackson'), ('Martin'),
+    ('Lee'), ('Perez'), ('Thompson'), ('White'), ('Harris'),
+    ('Sanchez'), ('Clark'), ('Ramirez'), ('Lewis'), ('Robinson'),
+    ('Walker'), ('Young'), ('Allen'), ('King'), ('Wright'),
+    ('Scott'), ('Torres'), ('Nguyen'), ('Hill'), ('Flores');
+
+INSERT INTO email_domains (domain) VALUES
+    ('gmail.com'), ('yahoo.com'), ('outlook.com'), ('hotmail.com'), ('icloud.com'),
+    ('protonmail.com'), ('aol.com'), ('mail.com'), ('zoho.com'), ('yandex.com'),
+    ('fastmail.com'), ('tutanota.com'), ('gmx.com'), ('live.com'), ('inbox.com');
+
+INSERT INTO adjectives (adjective) VALUES
+    ('Global'), ('Dynamic'), ('Premier'), ('Innovative'), ('Strategic'),
+    ('Advanced'), ('Rapid'), ('Smart'), ('Digital'), ('Prime'),
+    ('Elite'), ('Superior'), ('Optimal'), ('NextGen'), ('Pro'),
+    ('Mega'), ('Ultra'), ('Alpha'), ('Summit'), ('Apex'),
+    ('Quantum'), ('Phoenix'), ('Titan'), ('Infinity'), ('Velocity');
+
+INSERT INTO nouns (noun) VALUES
+    ('Technologies'), ('Solutions'), ('Systems'), ('Services'), ('Consulting'),
+    ('Group'), ('Partners'), ('Ventures'), ('Enterprises'), ('Industries'),
+    ('Logistics'), ('Marketing'), ('Analytics'), ('Networks'), ('Media'),
+    ('Capital'), ('Holdings'), ('Innovations'), ('Development'), ('Dynamics');
+
+INSERT INTO designators (designator) VALUES
+    ('Inc.'), ('LLC'), ('Corp.'), ('Ltd.'),
+    ('Corporation'), ('Incorporated'), ('Group'), ('International'), ('Associates'),
+    ('Partners'), ('Enterprises'), ('Holdings'), ('Limited'), ('Company');
+

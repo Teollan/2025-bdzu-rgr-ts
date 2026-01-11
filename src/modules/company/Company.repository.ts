@@ -1,4 +1,5 @@
-import { paginated, PaginatedResult, PaginationParams, Repository } from "@/core/repository";
+import { Repository } from "@/core/repository/Repository";
+import { paginate, Paginated, pseudoPaginate } from "@/lib/pagination";
 import { Company, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/Company.entity";
 
 export class CompanyRepository extends Repository {
@@ -16,23 +17,13 @@ export class CompanyRepository extends Repository {
     return result[0];
   }
 
-  @paginated
-  async list({
-    limit = 20,
-    offset = 0,
-  }: PaginationParams = {}): Promise<PaginatedResult<Company>> {
-    const result = await this.sql<Company[]>`
+  list(): Promise<Paginated<Company>> {
+    return paginate(({ limit, offset }) => this.sql<Company[]>`
       SELECT *
       FROM companies
       LIMIT ${limit}
       OFFSET ${offset}
-    `;
-
-    return {
-      items: result,
-      limit,
-      offset,
-    };
+    `);
   }
 
   async create({
@@ -45,6 +36,24 @@ export class CompanyRepository extends Repository {
     `;
 
     return result[0];
+  }
+
+  createRandom(count: number): Promise<Paginated<Company>> {
+    return pseudoPaginate(() => this.sql<Company[]>`
+      WITH lookup AS (
+        SELECT concat_ws(' ', adjective, noun, designator) AS name
+        FROM adjectives, nouns, designators
+        ORDER BY random()
+      )
+      INSERT INTO companies (name)
+      SELECT (
+        SELECT name
+        FROM lookup
+        OFFSET (i % (SELECT count(*) FROM lookup))
+        LIMIT 1
+      ) FROM generate_series(1, ${count}) i
+      RETURNING *
+    `);
   }
 
   async update(
