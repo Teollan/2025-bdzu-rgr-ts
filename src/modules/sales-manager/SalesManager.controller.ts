@@ -7,7 +7,7 @@ export class SalesManagerController extends Controller {
   private view = this.makeView(SalesManagerView);
 
   public async run(): Promise<void> {
-    const { action } = await this.io.ask({
+    const { action } = await this.ask({
       name: 'action',
       type: 'select',
       message: 'Managing Sales Managers. What would you like to do?',
@@ -44,7 +44,7 @@ export class SalesManagerController extends Controller {
   }
 
   private find = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter sales manager ID:',
@@ -69,7 +69,7 @@ export class SalesManagerController extends Controller {
   }
 
   findTopPerformersByCompany = async (): Promise<void> => {
-    const { companyId } = await this.io.ask({
+    const { companyId } = await this.ask({
       name: 'companyId',
       type: 'number',
       message: 'Enter company ID:',
@@ -77,19 +77,19 @@ export class SalesManagerController extends Controller {
       validate: (value: number) => Boolean(value) || 'Company ID is required',
     });
 
-    const { from } = await this.io.ask({
+    const { from } = await this.ask({
       name: 'from',
       type: 'date',
       message: 'Enter start date (from):',
     });
 
-    const { to } = await this.io.ask({
+    const { to } = await this.ask({
       name: 'to',
       type: 'date',
       message: 'Enter end date (to):',
     });
 
-    const { targetConversionRate } = await this.io.ask({
+    const { targetConversionRate } = await this.ask({
       name: 'targetConversionRate',
       type: 'number',
       message: 'Enter target conversion rate (%):',
@@ -115,7 +115,7 @@ export class SalesManagerController extends Controller {
   }
 
   private create = async (): Promise<void> => {
-    const { companyId } = await this.io.ask({
+    const { companyId } = await this.ask({
       name: 'companyId',
       type: 'number',
       message: 'Enter company ID:',
@@ -127,7 +127,7 @@ export class SalesManagerController extends Controller {
       return;
     }
 
-    const { firstName } = await this.io.ask({
+    const { firstName } = await this.ask({
       name: 'firstName',
       type: 'text',
       message: 'Enter first name:',
@@ -139,7 +139,7 @@ export class SalesManagerController extends Controller {
       return;
     }
 
-    const { lastName } = await this.io.ask({
+    const { lastName } = await this.ask({
       name: 'lastName',
       type: 'text',
       message: 'Enter last name:',
@@ -162,7 +162,7 @@ export class SalesManagerController extends Controller {
   }
 
   private update = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter sales manager ID to update:',
@@ -175,19 +175,19 @@ export class SalesManagerController extends Controller {
       return;
     }
 
-    const { companyId } = await this.io.ask({
+    const { companyId } = await this.ask({
       name: 'companyId',
       type: 'number',
       message: 'Enter new company ID (leave empty to skip):',
     });
 
-    const { firstName } = await this.io.ask({
+    const { firstName } = await this.ask({
       name: 'firstName',
       type: 'text',
       message: 'Enter new first name (leave empty to skip):',
     });
 
-    const { lastName } = await this.io.ask({
+    const { lastName } = await this.ask({
       name: 'lastName',
       type: 'text',
       message: 'Enter new last name (leave empty to skip):',
@@ -212,7 +212,7 @@ export class SalesManagerController extends Controller {
   }
 
   private createRandom = async (): Promise<void> => {
-    const { count } = await this.io.ask({
+    const { count } = await this.ask({
       name: 'count',
       type: 'number',
       message: 'How many random sales managers to create?',
@@ -238,7 +238,7 @@ export class SalesManagerController extends Controller {
   }
 
   private delete = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter sales manager ID to delete:',

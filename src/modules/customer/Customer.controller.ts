@@ -7,7 +7,7 @@ export class CustomerController extends Controller {
   private view = this.makeView(CustomerView);
 
   public async run(): Promise<void> {
-    const { action } = await this.io.ask({
+    const { action } = await this.ask({
       name: 'action',
       type: 'select',
       message: 'Managing Customers. What would you like to do?',
@@ -64,7 +64,7 @@ export class CustomerController extends Controller {
   }
 
   private find = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter customer ID:',
@@ -89,7 +89,7 @@ export class CustomerController extends Controller {
   }
 
   private findCustomersContactedBySalesManager = async (): Promise<void> => {
-    const { salesManagerNameLike } = await this.io.ask({
+    const { salesManagerNameLike } = await this.ask({
       name: 'salesManagerNameLike',
       type: 'text',
       message: 'Enter sales manager name (or part of it):',
@@ -101,14 +101,14 @@ export class CustomerController extends Controller {
       return;
     }
 
-    const { from } = await this.io.ask({
+    const { from } = await this.ask({
       name: 'from',
       type: 'date',
       message: 'Enter start date (YYYY-MM-DD):',
       initial: new Date(new Date().setMonth(new Date().getMonth() - 1)),
     });
 
-    const { to } = await this.io.ask({
+    const { to } = await this.ask({
       name: 'to',
       type: 'date',
       message: 'Enter end date (YYYY-MM-DD):',
@@ -131,7 +131,7 @@ export class CustomerController extends Controller {
   }
 
   private create = async (): Promise<void> => {
-    const { firstName } = await this.io.ask({
+    const { firstName } = await this.ask({
       name: 'firstName',
       type: 'text',
       message: 'Enter first name:',
@@ -143,7 +143,7 @@ export class CustomerController extends Controller {
       return;
     }
 
-    const { lastName } = await this.io.ask({
+    const { lastName } = await this.ask({
       name: 'lastName',
       type: 'text',
       message: 'Enter last name:',
@@ -155,7 +155,7 @@ export class CustomerController extends Controller {
       return;
     }
 
-    const { phoneNumber } = await this.io.ask({
+    const { phoneNumber } = await this.ask({
       name: 'phoneNumber',
       type: 'text',
       message: 'Enter phone number:',
@@ -167,7 +167,7 @@ export class CustomerController extends Controller {
       return;
     }
 
-    const { email } = await this.io.ask({
+    const { email } = await this.ask({
       name: 'email',
       type: 'text',
       message: 'Enter email:',
@@ -191,7 +191,7 @@ export class CustomerController extends Controller {
   }
 
   private update = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter customer ID to update:',
@@ -204,25 +204,25 @@ export class CustomerController extends Controller {
       return;
     }
 
-    const { firstName } = await this.io.ask({
+    const { firstName } = await this.ask({
       name: 'firstName',
       type: 'text',
       message: 'Enter new first name (leave empty to skip):',
     });
 
-    const { lastName } = await this.io.ask({
+    const { lastName } = await this.ask({
       name: 'lastName',
       type: 'text',
       message: 'Enter new last name (leave empty to skip):',
     });
 
-    const { phoneNumber } = await this.io.ask({
+    const { phoneNumber } = await this.ask({
       name: 'phoneNumber',
       type: 'text',
       message: 'Enter new phone number (leave empty to skip):',
     });
 
-    const { email } = await this.io.ask({
+    const { email } = await this.ask({
       name: 'email',
       type: 'text',
       message: 'Enter new email (leave empty to skip):',
@@ -248,7 +248,7 @@ export class CustomerController extends Controller {
   }
 
   private createRandom = async (): Promise<void> => {
-    const { count } = await this.io.ask({
+    const { count } = await this.ask({
       name: 'count',
       type: 'number',
       message: 'How many random customers to create?',
@@ -274,7 +274,7 @@ export class CustomerController extends Controller {
   }
 
   private delete = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter customer ID to delete:',

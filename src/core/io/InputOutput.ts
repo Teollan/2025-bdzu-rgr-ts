@@ -1,5 +1,3 @@
-import prompts from 'prompts';
-
 export type ColumnBlueprint<T> = (keyof T) | [string, keyof T] | [string, (item: T) => unknown];
 
 interface TableOptions<T> {
@@ -10,8 +8,6 @@ interface ObjectOptions<T> {
 }
 
 export class InputOutput {
-  public ask = prompts;
-
   public say = console.log;
 
   public error = console.error;

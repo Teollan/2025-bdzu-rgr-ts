@@ -7,7 +7,7 @@ export class CompanyController extends Controller {
   private view = this.makeView(CompanyView);
 
   public async run(): Promise<void> {
-    const { action } = await this.io.ask({
+    const { action } = await this.ask({
       name: 'action',
       type: 'select',
       message: 'Managing Companies. What would you like to do?',
@@ -64,7 +64,7 @@ export class CompanyController extends Controller {
   }
 
   private find = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter company ID:',
@@ -89,7 +89,7 @@ export class CompanyController extends Controller {
   }
 
   private findCompaniesWithLargeCustomerBases = async (): Promise<void> => {
-    const { minClients } = await this.io.ask({
+    const { minClients } = await this.ask({
       name: 'minClients',
       type: 'number',
       message: 'Enter minimum number of customers:',
@@ -109,7 +109,7 @@ export class CompanyController extends Controller {
   }
 
   private create = async (): Promise<void> => {
-    const { name } = await this.io.ask({
+    const { name } = await this.ask({
       name: 'name',
       type: 'text',
       message: 'Enter company name:',
@@ -128,14 +128,14 @@ export class CompanyController extends Controller {
   }
 
   private update = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter company ID to update:',
       min: 1,
     });
 
-    const { name } = await this.io.ask({
+    const { name } = await this.ask({
       name: 'name',
       type: 'text',
       message: 'Enter new company name (leave empty to skip):',
@@ -154,7 +154,7 @@ export class CompanyController extends Controller {
   }
 
   private createRandom = async (): Promise<void> => {
-    const { count } = await this.io.ask({
+    const { count } = await this.ask({
       name: 'count',
       type: 'number',
       message: 'How many random companies to create?',
@@ -180,7 +180,7 @@ export class CompanyController extends Controller {
   }
 
   private delete = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter company ID to delete:',

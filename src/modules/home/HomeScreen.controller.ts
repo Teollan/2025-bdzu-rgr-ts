@@ -3,7 +3,7 @@ import { Controller } from '@/core/controller/Controller';
 
 export class HomeScreenController extends Controller {
   public async run(): Promise<void> {
-    const { route } = await this.io.ask({
+    const { route } = await this.ask({
       name: 'route',
       type: 'select',
       message: 'What would you like to do?',

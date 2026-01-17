@@ -4,6 +4,7 @@ import { Repository, RepositoryConstructor } from '@/core/repository/Repository'
 import { Router } from '@/core/router/Router';
 import { View, ViewConstructor } from '@/core/view/View';
 import { Paginated } from '@/lib/pagination';
+import prompts from 'prompts';
 
 export interface BrowsePagesOptions<T> {
   data: Paginated<T>;
@@ -20,6 +21,8 @@ export abstract class Controller {
   protected db: Postgres;
   protected io: InputOutput;
   protected router: Router;
+
+  protected ask = prompts;
 
   constructor(context: ControllerContext) {
     this.db = context.db;
@@ -77,7 +80,7 @@ export abstract class Controller {
 
       onPage(items, page);
 
-      const { action } = await this.io.ask({
+      const { action } = await this.ask({
         name: 'action',
         type: 'select',
         message: 'What would you like to do next?',

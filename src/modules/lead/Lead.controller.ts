@@ -8,7 +8,7 @@ export class LeadController extends Controller {
   private view = this.makeView(LeadView);
 
   public async run(): Promise<void> {
-    const { action } = await this.io.ask({
+    const { action } = await this.ask({
       name: 'action',
       type: 'select',
       message: 'Managing Leads. What would you like to do?',
@@ -45,7 +45,7 @@ export class LeadController extends Controller {
   }
 
   private find = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter lead ID:',
@@ -83,7 +83,7 @@ export class LeadController extends Controller {
   }
 
   private create = async (): Promise<void> => {
-    const { companyId } = await this.io.ask({
+    const { companyId } = await this.ask({
       name: 'companyId',
       type: 'number',
       message: 'Enter company ID:',
@@ -96,7 +96,7 @@ export class LeadController extends Controller {
       return;
     }
 
-    const { customerId } = await this.io.ask({
+    const { customerId } = await this.ask({
       name: 'customerId',
       type: 'number',
       message: 'Enter customer ID:',
@@ -109,7 +109,7 @@ export class LeadController extends Controller {
       return;
     }
 
-    const { status } = await this.io.ask({
+    const { status } = await this.ask({
       name: 'status',
       type: 'select',
       message: 'Select lead status:',
@@ -132,7 +132,7 @@ export class LeadController extends Controller {
   }
 
   private update = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter lead ID to update:',
@@ -145,19 +145,19 @@ export class LeadController extends Controller {
       return;
     }
 
-    const { companyId } = await this.io.ask({
+    const { companyId } = await this.ask({
       name: 'companyId',
       type: 'number',
       message: 'Enter new company ID (leave empty to skip):',
     });
 
-    const { customerId } = await this.io.ask({
+    const { customerId } = await this.ask({
       name: 'customerId',
       type: 'number',
       message: 'Enter new customer ID (leave empty to skip):',
     });
 
-    const { status } = await this.io.ask({
+    const { status } = await this.ask({
       name: 'status',
       type: 'select',
       message: 'Select new status (or skip):',
@@ -189,7 +189,7 @@ export class LeadController extends Controller {
   }
 
   private createRandom = async (): Promise<void> => {
-    const { count } = await this.io.ask({
+    const { count } = await this.ask({
       name: 'count',
       type: 'number',
       message: 'How many random leads to create?',
@@ -215,7 +215,7 @@ export class LeadController extends Controller {
   }
 
   private delete = async (): Promise<void> => {
-    const { id } = await this.io.ask({
+    const { id } = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter lead ID to delete:',
