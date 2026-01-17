@@ -1,5 +1,5 @@
 import { App } from '@/core/app/App';
-import { Controller } from '@/core/controller';
+import { Controller } from '@/core/controller/Controller';
 
 export class HomeScreenController extends Controller {
   public async run(): Promise<void> {

@@ -1,4 +1,4 @@
-import { Controller } from '@/core/controller';
+import { Controller } from '@/core/controller/Controller';
 import { CustomerRepository } from '@/modules/customer/Customer.repository';
 import { CustomerView } from '@/modules/customer/Customer.view';
 
@@ -51,49 +51,16 @@ export class CustomerController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    let result = await this.repository.list();
+    const result = await this.repository.list();
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      if (items.length === 0) {
-        this.io.say('No customers found.');
-
-        return;
-      }
-
-      this.io.say(`Customers found (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Customers found (page ${page}):`);
+        this.view.many(items);
+      },
+      onEmptyPage: () => this.io.say('No customers found.'),
+    });
   }
 
   private find = async (): Promise<void> => {
@@ -148,52 +115,19 @@ export class CustomerController extends Controller {
       initial: new Date(),
     });
 
-    let result = await this.repository.findCustomersContactedBySalesManager({
+    const result = await this.repository.findCustomersContactedBySalesManager({
       salesManagerNameLike,
       timeframe: { from, to },
     });
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      if (items.length === 0) {
-        this.io.say('No customers found for the given criteria.');
-
-        return;
-      }
-
-      this.io.say(`Customers contacted by sales managers matching "${salesManagerNameLike}" (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Customers contacted by sales managers matching "${salesManagerNameLike}" (page ${page}):`);
+        this.view.many(items);
+      },
+      onEmptyPage: () => this.io.say('No customers found for the given criteria.'),
+    });
   }
 
   private create = async (): Promise<void> => {
@@ -328,43 +262,15 @@ export class CustomerController extends Controller {
       return;
     }
 
-    let result = await this.repository.createRandom(count);
+    const result = await this.repository.createRandom(count);
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      this.io.say(`Created ${count} customers (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Created ${count} customers (page ${page}):`);
+        this.view.many(items);
+      },
+    });
   }
 
   private delete = async (): Promise<void> => {

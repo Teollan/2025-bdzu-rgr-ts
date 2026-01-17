@@ -3,13 +3,19 @@ import { InputOutput } from '@/core/io/InputOutput';
 import { Repository, RepositoryConstructor } from '@/core/repository/Repository';
 import { Router } from '@/core/router/Router';
 import { View, ViewConstructor } from '@/core/view/View';
+import { Paginated } from '@/lib/pagination';
+
+export interface BrowsePagesOptions<T> {
+  data: Paginated<T>;
+  onPage: (items: T[], page: number) => void;
+  onEmptyPage?: (items: T[], page: number) => void;
+}
 
 export interface ControllerContext {
   db: Postgres;
   io: InputOutput;
   router: Router;
 }
-
 export abstract class Controller {
   protected db: Postgres;
   protected io: InputOutput;
@@ -37,6 +43,68 @@ export abstract class Controller {
     return new ViewClass({
       io: this.io,
     });
+  }
+
+  protected async browsePages<T>({
+    data,
+    onPage,
+    onEmptyPage = onPage,
+  }: BrowsePagesOptions<T>): Promise<void> {
+    let result = data;
+
+    if (result.items.length === 0) {
+      onEmptyPage(result.items, 1);
+
+      return;
+    }
+
+    if (!result.next && !result.prev) {
+      onPage(result.items, 1);
+
+      return;
+    }
+
+    while (true) {
+      const {
+        items,
+        limit,
+        offset,
+        next,
+        prev,
+      } = result;
+
+      const page = Math.floor(offset / limit) + 1;
+
+      onPage(items, page);
+
+      const { action } = await this.io.ask({
+        name: 'action',
+        type: 'select',
+        message: 'What would you like to do next?',
+        choices: [
+          {
+            title: 'Next Page',
+            value: next,
+            disabled: !next,
+          },
+          {
+            title: 'Previous Page',
+            value: prev,
+            disabled: !prev,
+          },
+          {
+            title: 'Done',
+            value: null,
+          },
+        ],
+      });
+
+      if (!action) {
+        break;
+      }
+
+      result = await action();
+    }
   }
 }
 

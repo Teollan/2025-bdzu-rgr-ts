@@ -1,4 +1,4 @@
-import { Controller } from '@/core/controller';
+import { Controller } from '@/core/controller/Controller';
 import { SalesManagerRepository } from '@/modules/sales-manager/SalesManager.repository';
 import { SalesManagerView } from '@/modules/sales-manager/SalesManager.view';
 
@@ -31,49 +31,16 @@ export class SalesManagerController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    let result = await this.repository.list();
+    const result = await this.repository.list();
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      if (items.length === 0) {
-        this.io.say('No sales managers found.');
-
-        return;
-      }
-
-      this.io.say(`Sales managers found (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Sales managers found (page ${page}):`);
+        this.view.many(items);
+      },
+      onEmptyPage: () => this.io.say('No sales managers found.'),
+    });
   }
 
   private find = async (): Promise<void> => {
@@ -259,43 +226,15 @@ export class SalesManagerController extends Controller {
       return;
     }
 
-    let result = await this.repository.createRandom(count);
+    const result = await this.repository.createRandom(count);
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      this.io.say(`Created ${count} sales managers (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Created ${count} sales managers (page ${page}):`);
+        this.view.many(items);
+      },
+    });
   }
 
   private delete = async (): Promise<void> => {

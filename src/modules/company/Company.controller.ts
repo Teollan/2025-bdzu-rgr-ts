@@ -1,4 +1,4 @@
-import { Controller } from '@/core/controller';
+import { Controller } from '@/core/controller/Controller';
 import { CompanyRepository } from '@/modules/company/Company.repository';
 import { CompanyView } from '@/modules/company/Company.view';
 
@@ -51,49 +51,16 @@ export class CompanyController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    let result = await this.repository.list();
+    const result = await this.repository.list();
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      if (items.length === 0) {
-        this.io.say('No companies found.');
-
-        return;
-      }
-
-      this.io.say(`Companies found (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Companies found (page ${page}):`);
+        this.view.many(items);
+      },
+      onEmptyPage: () => this.io.say('No companies found.'),
+    });
   }
 
   private find = async (): Promise<void> => {
@@ -129,49 +96,16 @@ export class CompanyController extends Controller {
       min: 1,
     });
 
-    let result = await this.repository.findCompaniesWithLargeCustomerBases(minClients);
+    const result = await this.repository.findCompaniesWithLargeCustomerBases(minClients);
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      if (items.length === 0) {
-        this.io.say('No companies found with large customer bases.');
-
-        return;
-      }
-
-      this.io.say(`Companies with at least ${minClients} customers (page ${page}):`);
-      this.view.companiesWithCustomerCount(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Companies with at least ${minClients} customers (page ${page}):`);
+        this.view.companiesWithCustomerCount(items);
+      },
+      onEmptyPage: () => this.io.say('No companies found with large customer bases.'),
+    });
   }
 
   private create = async (): Promise<void> => {
@@ -234,43 +168,15 @@ export class CompanyController extends Controller {
       return;
     }
 
-    let result = await this.repository.createRandom(count);
+    const result = await this.repository.createRandom(count);
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      this.io.say(`Created ${count} companies (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Created ${count} companies (page ${page}):`);
+        this.view.many(items);
+      },
+    });
   }
 
   private delete = async (): Promise<void> => {

@@ -1,4 +1,4 @@
-import { Controller } from '@/core/controller';
+import { Controller } from '@/core/controller/Controller';
 import { LeadRepository } from '@/modules/lead/Lead.repository';
 import { LeadStatus, UpdateLeadFields } from '@/modules/lead/Lead.entity';
 import { LeadView } from '@/modules/lead/Lead.view';
@@ -32,49 +32,16 @@ export class LeadController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    let result = await this.repository.list();
+    const result = await this.repository.list();
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      if (items.length === 0) {
-        this.io.say('No leads found.');
-
-        return;
-      }
-
-      this.io.say(`Leads found (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Leads found (page ${page}):`);
+        this.view.many(items);
+      },
+      onEmptyPage: () => this.io.say('No leads found.'),
+    });
   }
 
   private find = async (): Promise<void> => {
@@ -103,43 +70,16 @@ export class LeadController extends Controller {
   }
 
   private assignLeads = async (): Promise<void> => {
-    let result = await this.repository.assignLeadsToSalesManagers();
+    const result = await this.repository.assignLeadsToSalesManagers();
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      this.io.say(`Assigned PENDING leads to sales managers (page ${page}):`);
-      this.view.manyAssigned(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Assigned leads to sales managers (page ${page}):`);
+        this.view.manyAssigned(items);
+      },
+      onEmptyPage: () => this.io.say('No unassigned leads found.'),
+    });
   }
 
   private create = async (): Promise<void> => {
@@ -263,43 +203,15 @@ export class LeadController extends Controller {
       return;
     }
 
-    let result = await this.repository.createRandom(count);
+    const result = await this.repository.createRandom(count);
 
-    while (true) {
-      const { items, limit, offset, next, prev } = result;
-      const page = Math.floor(offset / limit) + 1;
-
-      this.io.say(`Created ${count} leads (page ${page}):`);
-      this.view.many(items);
-
-      const { action } = await this.io.ask({
-        name: 'action',
-        type: 'select',
-        message: 'What would you like to do next?',
-        choices: [
-          {
-            title: 'Previous Page',
-            value: prev,
-            disabled: !prev,
-          },
-          {
-            title: 'Next Page',
-            value: next,
-            disabled: !next,
-          },
-          {
-            title: 'Done',
-            value: null,
-          },
-        ],
-      });
-
-      if (!action) {
-        break;
-      }
-
-      result = await action();
-    }
+    await this.browsePages({
+      data: result,
+      onPage: (items, page) => {
+        this.io.say(`Created ${count} leads (page ${page}):`);
+        this.view.many(items);
+      },
+    });
   }
 
   private delete = async (): Promise<void> => {
