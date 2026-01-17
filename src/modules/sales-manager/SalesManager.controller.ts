@@ -36,10 +36,10 @@ export class SalesManagerController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Sales managers found (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Sales managers found (page ${page}):`);
+        this.view.showSalesManagers(items);
       },
-      onEmptyPage: () => this.io.say('No sales managers found.'),
+      onEmptyPage: () => this.view.say('No sales managers found.'),
     });
   }
 
@@ -52,7 +52,7 @@ export class SalesManagerController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -60,12 +60,12 @@ export class SalesManagerController extends Controller {
     const salesManager = await this.repository.findById(id);
 
     if (!salesManager) {
-      this.io.say(`Sales manager with id ${id} not found.`);
+      this.view.say(`Sales manager with id ${id} not found.`);
 
       return;
     }
 
-    this.view.one(salesManager);
+    this.view.showSalesManager(salesManager);
   }
 
   findTopPerformersByCompany = async (): Promise<void> => {
@@ -105,13 +105,13 @@ export class SalesManagerController extends Controller {
     });
 
     if (result.length === 0) {
-      this.io.say('No sales managers found matching the criteria.');
+      this.view.say('No sales managers found matching the criteria.');
 
       return;
     }
 
-    this.io.say(`Top performing sales managers who reached the target conversion rate of ${targetConversionRate} for company #${companyId} from [${from.toDateString()}] to [${to.toDateString()}]:`);
-    this.view.many(result);
+    this.view.say(`Top performing sales managers who reached the target conversion rate of ${targetConversionRate} for company #${companyId} from [${from.toDateString()}] to [${to.toDateString()}]:`);
+    this.view.showEntities(result);
   }
 
   private create = async (): Promise<void> => {
@@ -122,7 +122,7 @@ export class SalesManagerController extends Controller {
     });
 
     if (!companyId) {
-      this.io.say('Sales manager creation cancelled.');
+      this.view.say('Sales manager creation cancelled.');
 
       return;
     }
@@ -134,7 +134,7 @@ export class SalesManagerController extends Controller {
     });
 
     if (!firstName) {
-      this.io.say('Sales manager creation cancelled.');
+      this.view.say('Sales manager creation cancelled.');
 
       return;
     }
@@ -146,7 +146,7 @@ export class SalesManagerController extends Controller {
     });
 
     if (!lastName) {
-      this.io.say('Sales manager creation cancelled.');
+      this.view.say('Sales manager creation cancelled.');
 
       return;
     }
@@ -157,8 +157,8 @@ export class SalesManagerController extends Controller {
       lastName,
     });
 
-    this.io.say(`Sales manager created with id ${salesManager.id}`);
-    this.view.one(salesManager);
+    this.view.say(`Sales manager created with id ${salesManager.id}`);
+    this.view.showSalesManager(salesManager);
   }
 
   private update = async (): Promise<void> => {
@@ -170,7 +170,7 @@ export class SalesManagerController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Update cancelled.');
+      this.view.say('Update cancelled.');
 
       return;
     }
@@ -200,15 +200,15 @@ export class SalesManagerController extends Controller {
     if (lastName) updates.lastName = lastName;
 
     if (Object.keys(updates).length === 0) {
-      this.io.say('No changes made.');
+      this.view.say('No changes made.');
 
       return;
     }
 
     const salesManager = await this.repository.update(id, updates);
 
-    this.io.say(`Sales manager ${salesManager.id} updated successfully`);
-    this.view.one(salesManager);
+    this.view.say(`Sales manager ${salesManager.id} updated successfully`);
+    this.view.showSalesManager(salesManager);
   }
 
   private createRandom = async (): Promise<void> => {
@@ -221,7 +221,7 @@ export class SalesManagerController extends Controller {
     });
 
     if (!count) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -231,8 +231,8 @@ export class SalesManagerController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Created ${count} sales managers (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Created ${count} sales managers (page ${page}):`);
+        this.view.showSalesManagers(items);
       },
     });
   }
@@ -246,14 +246,14 @@ export class SalesManagerController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Deletion cancelled.');
+      this.view.say('Deletion cancelled.');
 
       return;
     }
 
     const salesManager = await this.repository.delete(id);
 
-    this.io.say(`Sales manager ${salesManager.id} deleted successfully`);
-    this.view.one(salesManager);
+    this.view.say(`Sales manager ${salesManager.id} deleted successfully`);
+    this.view.showSalesManager(salesManager);
   }
 }

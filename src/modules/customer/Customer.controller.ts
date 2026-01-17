@@ -56,10 +56,10 @@ export class CustomerController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Customers found (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Customers found (page ${page}):`);
+        this.view.showCustomers(items);
       },
-      onEmptyPage: () => this.io.say('No customers found.'),
+      onEmptyPage: () => this.view.say('No customers found.'),
     });
   }
 
@@ -72,7 +72,7 @@ export class CustomerController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -80,12 +80,12 @@ export class CustomerController extends Controller {
     const customer = await this.repository.findById(id);
 
     if (!customer) {
-      this.io.say(`Customer with id ${id} not found.`);
+      this.view.say(`Customer with id ${id} not found.`);
 
       return;
     }
 
-    this.view.one(customer);
+    this.view.showCustomer(customer);
   }
 
   private findCustomersContactedBySalesManager = async (): Promise<void> => {
@@ -96,7 +96,7 @@ export class CustomerController extends Controller {
     });
 
     if (!salesManagerNameLike) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -123,10 +123,10 @@ export class CustomerController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Customers contacted by sales managers matching "${salesManagerNameLike}" (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Customers contacted by sales managers matching "${salesManagerNameLike}" (page ${page}):`);
+        this.view.showCustomers(items);
       },
-      onEmptyPage: () => this.io.say('No customers found for the given criteria.'),
+      onEmptyPage: () => this.view.say('No customers found for the given criteria.'),
     });
   }
 
@@ -138,7 +138,7 @@ export class CustomerController extends Controller {
     });
 
     if (!firstName) {
-      this.io.say('Customer creation cancelled.');
+      this.view.say('Customer creation cancelled.');
 
       return;
     }
@@ -150,7 +150,7 @@ export class CustomerController extends Controller {
     });
 
     if (!lastName) {
-      this.io.say('Customer creation cancelled.');
+      this.view.say('Customer creation cancelled.');
 
       return;
     }
@@ -162,7 +162,7 @@ export class CustomerController extends Controller {
     });
 
     if (!phoneNumber) {
-      this.io.say('Customer creation cancelled.');
+      this.view.say('Customer creation cancelled.');
 
       return;
     }
@@ -174,7 +174,7 @@ export class CustomerController extends Controller {
     });
 
     if (!email) {
-      this.io.say('Customer creation cancelled.');
+      this.view.say('Customer creation cancelled.');
 
       return;
     }
@@ -186,8 +186,8 @@ export class CustomerController extends Controller {
       email,
     });
 
-    this.io.say(`Customer created with id ${customer.id}`);
-    this.view.one(customer);
+    this.view.say(`Customer created with id ${customer.id}`);
+    this.view.showCustomer(customer);
   }
 
   private update = async (): Promise<void> => {
@@ -199,7 +199,7 @@ export class CustomerController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Update cancelled.');
+      this.view.say('Update cancelled.');
 
       return;
     }
@@ -236,15 +236,15 @@ export class CustomerController extends Controller {
     if (email) updates.email = email;
 
     if (Object.keys(updates).length === 0) {
-      this.io.say('No changes made.');
+      this.view.say('No changes made.');
 
       return;
     }
 
     const customer = await this.repository.update(id, updates);
 
-    this.io.say(`Customer ${customer.id} updated successfully`);
-    this.view.one(customer);
+    this.view.say(`Customer ${customer.id} updated successfully`);
+    this.view.showCustomer(customer);
   }
 
   private createRandom = async (): Promise<void> => {
@@ -257,7 +257,7 @@ export class CustomerController extends Controller {
     });
 
     if (!count) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -267,8 +267,8 @@ export class CustomerController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Created ${count} customers (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Created ${count} customers (page ${page}):`);
+        this.view.showCustomers(items);
       },
     });
   }
@@ -282,14 +282,14 @@ export class CustomerController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Deletion cancelled.');
+      this.view.say('Deletion cancelled.');
 
       return;
     }
 
     const customer = await this.repository.delete(id);
 
-    this.io.say(`Customer ${customer.id} deleted successfully`);
-    this.view.one(customer);
+    this.view.say(`Customer ${customer.id} deleted successfully`);
+    this.view.showCustomer(customer);
   }
 }

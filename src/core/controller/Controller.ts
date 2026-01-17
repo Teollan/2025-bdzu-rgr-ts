@@ -1,5 +1,4 @@
 import { Postgres } from '@/core/database';
-import { InputOutput } from '@/core/io/InputOutput';
 import { Repository, RepositoryConstructor } from '@/core/repository/Repository';
 import { Router } from '@/core/router/Router';
 import { View, ViewConstructor } from '@/core/view/View';
@@ -14,19 +13,16 @@ export interface BrowsePagesOptions<T> {
 
 export interface ControllerContext {
   db: Postgres;
-  io: InputOutput;
   router: Router;
 }
 export abstract class Controller {
   protected db: Postgres;
-  protected io: InputOutput;
   protected router: Router;
 
   protected ask = prompts;
 
   constructor(context: ControllerContext) {
     this.db = context.db;
-    this.io = context.io;
     this.router = context.router;
   }
 
@@ -43,9 +39,7 @@ export abstract class Controller {
   protected makeView<T extends View>(
     ViewClass: ViewConstructor<T>
   ): T {
-    return new ViewClass({
-      io: this.io,
-    });
+    return new ViewClass();
   }
 
   protected async browsePages<T>({

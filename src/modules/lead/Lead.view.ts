@@ -2,15 +2,29 @@ import { View } from '@/core/view/View';
 import { Lead, LeadCompanySalesManager } from '@/modules/lead/Lead.entity';
 
 export class LeadView extends View {
-  one(lead: Lead): void {
-    this.io.object(lead);
+  showLead(lead: Lead): void {
+    this.object(lead);
   }
 
-  many(leads: Lead[]): void {
-    this.io.table(leads);
+  showLeads(leads: Lead[]): void {
+    this.table(leads, {
+      columns: [
+        ['ID', 'id'],
+        ['Company ID', 'companyId'],
+        ['Customer ID', 'customerId'],
+        ['Status', 'status'],
+        ['Created At', 'createdAt'],
+      ],
+    });
   }
 
-  manyAssigned(items: LeadCompanySalesManager[]): void {
-    this.io.table(items);
+  showAssignedLeads(items: LeadCompanySalesManager[]): void {
+    this.table(items, {
+      columns: [
+        ['Lead ID', 'leadId'],
+        ['Company Name', 'companyName'],
+        ['Sales Manager Name', 'salesManagerName'],
+      ],
+    });
   }
 }

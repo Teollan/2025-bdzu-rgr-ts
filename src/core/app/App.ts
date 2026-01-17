@@ -1,6 +1,5 @@
 import { Router } from '@/core/router/Router';
 import { Postgres } from '@/core/database';
-import { InputOutput } from '@/core/io/InputOutput';
 
 import { HomeScreenController } from '@/modules/home/HomeScreen.controller';
 import { CompanyController } from '@/modules/company/Company.controller';
@@ -9,8 +8,6 @@ import { LeadController } from '@/modules/lead/Lead.controller';
 import { SalesManagerController } from '@/modules/sales-manager/SalesManager.controller';
 
 export abstract class App {
-  private static io = new InputOutput();
-
   private static db: Postgres = new Postgres();
 
   private static router: Router = new Router({
@@ -38,7 +35,6 @@ export abstract class App {
   public static async start(): Promise<App> {
     const {
       db,
-      io,
       router,
     } = App;
     
@@ -48,13 +44,12 @@ export abstract class App {
       try {
         const context = {
           db,
-          io,
           router,
         };
 
         await router.invoke(context);
       } catch (error) {
-        io.error('An error occurred:', error);
+        console.error('An error occurred:', error);
       }
     }
   }
@@ -62,7 +57,7 @@ export abstract class App {
   public static async stop() {
     await App.db.disconnect();
 
-    App.io.say('Goodbye!');
+    console.log('Goodbye!');
 
     process.exit(0);
   }

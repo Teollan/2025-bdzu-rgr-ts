@@ -56,10 +56,10 @@ export class CompanyController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Companies found (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Companies found (page ${page}):`);
+        this.view.showCompanies(items);
       },
-      onEmptyPage: () => this.io.say('No companies found.'),
+      onEmptyPage: () => this.view.say('No companies found.'),
     });
   }
 
@@ -72,7 +72,7 @@ export class CompanyController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -80,12 +80,12 @@ export class CompanyController extends Controller {
     const company = await this.repository.findById(id);
 
     if (!company) {
-      this.io.say(`Company with id ${id} not found.`);
+      this.view.say(`Company with id ${id} not found.`);
 
       return;
     }
 
-    this.view.one(company);
+    this.view.showCompany(company);
   }
 
   private findCompaniesWithLargeCustomerBases = async (): Promise<void> => {
@@ -93,7 +93,8 @@ export class CompanyController extends Controller {
       name: 'minClients',
       type: 'number',
       message: 'Enter minimum number of customers:',
-      min: 1,
+      initial: 20,
+      min: 0,
     });
 
     const result = await this.repository.findCompaniesWithLargeCustomerBases(minClients);
@@ -101,10 +102,10 @@ export class CompanyController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Companies with at least ${minClients} customers (page ${page}):`);
-        this.view.companiesWithCustomerCount(items);
+        this.view.say(`Companies with at least ${minClients} customers (page ${page}):`);
+        this.view.showCompaniesWithCustomerCount(items);
       },
-      onEmptyPage: () => this.io.say('No companies found with large customer bases.'),
+      onEmptyPage: () => this.view.say(`No companies with more than the ${minClients} of customers found.`),
     });
   }
 
@@ -116,15 +117,15 @@ export class CompanyController extends Controller {
     });
 
     if (!name) {
-      this.io.say('Company creation cancelled.');
+      this.view.say('Company creation cancelled.');
 
       return;
     }
 
     const company = await this.repository.create({ name });
 
-    this.io.say(`Company created with id ${company.id}`);
-    this.view.one(company);
+    this.view.say(`Company created with id ${company.id}`);
+    this.view.showCompany(company);
   }
 
   private update = async (): Promise<void> => {
@@ -142,15 +143,15 @@ export class CompanyController extends Controller {
     });
 
     if (!name) {
-      this.io.say('No changes made.');
+      this.view.say('No changes made.');
 
       return;
     }
 
     const company = await this.repository.update(id, { name });
 
-    this.io.say(`Company ${company.id} updated successfully`);
-    this.view.one(company);
+    this.view.say(`Company ${company.id} updated successfully`);
+    this.view.showCompany(company);
   }
 
   private createRandom = async (): Promise<void> => {
@@ -163,7 +164,7 @@ export class CompanyController extends Controller {
     });
 
     if (!count) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -173,8 +174,8 @@ export class CompanyController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Created ${count} companies (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Created ${count} companies (page ${page}):`);
+        this.view.showCompanies(items);
       },
     });
   }
@@ -188,14 +189,14 @@ export class CompanyController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Deletion cancelled.');
+      this.view.say('Deletion cancelled.');
 
       return;
     }
 
     const company = await this.repository.delete(id);
 
-    this.io.say(`Company ${company.id} deleted successfully`);
-    this.view.one(company);
+    this.view.say(`Company ${company.id} deleted successfully`);
+    this.view.showCompany(company);
   }
 }

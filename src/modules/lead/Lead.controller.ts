@@ -37,10 +37,10 @@ export class LeadController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Leads found (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Leads found (page ${page}):`);
+        this.view.showLeads(items);
       },
-      onEmptyPage: () => this.io.say('No leads found.'),
+      onEmptyPage: () => this.view.say('No leads found.'),
     });
   }
 
@@ -53,7 +53,7 @@ export class LeadController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -61,12 +61,12 @@ export class LeadController extends Controller {
     const lead = await this.repository.findById(id);
 
     if (!lead) {
-      this.io.say(`Lead with id ${id} not found.`);
+      this.view.say(`Lead with id ${id} not found.`);
 
       return;
     }
 
-    this.view.one(lead);
+    this.view.showLead(lead);
   }
 
   private assignLeads = async (): Promise<void> => {
@@ -75,10 +75,10 @@ export class LeadController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Assigned leads to sales managers (page ${page}):`);
-        this.view.manyAssigned(items);
+        this.view.say(`Assigned leads to sales managers (page ${page}):`);
+        this.view.showAssignedLeads(items);
       },
-      onEmptyPage: () => this.io.say('No unassigned leads found.'),
+      onEmptyPage: () => this.view.say('No unassigned leads found.'),
     });
   }
 
@@ -91,7 +91,7 @@ export class LeadController extends Controller {
     });
 
     if (!companyId) {
-      this.io.say('Lead creation cancelled.');
+      this.view.say('Lead creation cancelled.');
 
       return;
     }
@@ -104,7 +104,7 @@ export class LeadController extends Controller {
     });
 
     if (!customerId) {
-      this.io.say('Lead creation cancelled.');
+      this.view.say('Lead creation cancelled.');
 
       return;
     }
@@ -127,8 +127,8 @@ export class LeadController extends Controller {
       status,
     });
 
-    this.io.say(`Lead created with id ${lead.id}`);
-    this.view.one(lead);
+    this.view.say(`Lead created with id ${lead.id}`);
+    this.view.showLead(lead);
   }
 
   private update = async (): Promise<void> => {
@@ -140,7 +140,7 @@ export class LeadController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Update cancelled.');
+      this.view.say('Update cancelled.');
 
       return;
     }
@@ -177,15 +177,15 @@ export class LeadController extends Controller {
     if (status) updates.status = status;
 
     if (Object.keys(updates).length === 0) {
-      this.io.say('No changes made.');
+      this.view.say('No changes made.');
 
       return;
     }
 
     const lead = await this.repository.update(id, updates);
 
-    this.io.say(`Lead ${lead.id} updated successfully`);
-    this.view.one(lead);
+    this.view.say(`Lead ${lead.id} updated successfully`);
+    this.view.showLead(lead);
   }
 
   private createRandom = async (): Promise<void> => {
@@ -198,7 +198,7 @@ export class LeadController extends Controller {
     });
 
     if (!count) {
-      this.io.say('Cancelled.');
+      this.view.say('Cancelled.');
 
       return;
     }
@@ -208,8 +208,8 @@ export class LeadController extends Controller {
     await this.browsePages({
       data: result,
       onPage: (items, page) => {
-        this.io.say(`Created ${count} leads (page ${page}):`);
-        this.view.many(items);
+        this.view.say(`Created ${count} leads (page ${page}):`);
+        this.view.showLeads(items);
       },
     });
   }
@@ -223,14 +223,14 @@ export class LeadController extends Controller {
     });
 
     if (!id) {
-      this.io.say('Deletion cancelled.');
+      this.view.say('Deletion cancelled.');
 
       return;
     }
 
     const lead = await this.repository.delete(id);
 
-    this.io.say(`Lead ${lead.id} deleted successfully`);
-    this.view.one(lead);
+    this.view.say(`Lead ${lead.id} deleted successfully`);
+    this.view.showLead(lead);
   }
 }

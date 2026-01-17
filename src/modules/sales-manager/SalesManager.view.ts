@@ -2,11 +2,18 @@ import { View } from '@/core/view/View';
 import { SalesManager } from '@/modules/sales-manager/SalesManager.entity';
 
 export class SalesManagerView extends View {
-  one(salesManager: SalesManager): void {
-    this.io.object(salesManager);
+  showSalesManager(salesManager: SalesManager): void {
+    this.object(salesManager);
   }
 
-  many(salesManagers: SalesManager[]): void {
-    this.io.table(salesManagers);
+  showSalesManagers(salesManagers: SalesManager[]): void {
+    this.table(salesManagers, {
+      columns: [
+        ['ID', 'id'],
+        ['Company ID', 'companyId'],
+        ['First Name', 'firstName'],
+        ['Last Name', 'lastName'],
+      ],
+    });
   }
 }

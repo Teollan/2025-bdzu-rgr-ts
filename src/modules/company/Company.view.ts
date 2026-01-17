@@ -2,20 +2,25 @@ import { View } from '@/core/view/View';
 import { Company, CompanyWithCustomerCount } from '@/modules/company/Company.entity';
 
 export class CompanyView extends View {
-  one(company: Company): void {
-    this.io.object(company);
+  showCompany(company: Company): void {
+    this.object(company);
   }
 
-  many(companies: Company[]): void {
-    this.io.table(companies);
+  showCompanies(companies: Company[]): void {
+    this.table(companies, {
+      columns: [
+        ['ID', 'id'],
+        ['Name', 'name'],
+      ],
+    });
   }
 
-  companiesWithCustomerCount(companies: CompanyWithCustomerCount[]): void {
-    this.io.table(companies, {
+  showCompaniesWithCustomerCount(companies: CompanyWithCustomerCount[]): void {
+    this.table(companies, {
       columns: [
         ['Company Name', 'companyName'],
         ['Customer Count', 'customerCount'],
-      ]
+      ],
     });
   }
 }

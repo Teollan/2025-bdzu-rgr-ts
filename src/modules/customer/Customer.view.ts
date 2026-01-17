@@ -2,11 +2,19 @@ import { View } from '@/core/view/View';
 import { Customer } from '@/modules/customer/Customer.entity';
 
 export class CustomerView extends View {
-  one(customer: Customer): void {
-    this.io.object(customer);
+  showCustomer(customer: Customer): void {
+    this.object(customer);
   }
 
-  many(customers: Customer[]): void {
-    this.io.table(customers);
+  showCustomers(customers: Customer[]): void {
+    this.table(customers, {
+      columns: [
+        ['ID', 'id'],
+        ['First Name', 'firstName'],
+        ['Last Name', 'lastName'],
+        ['Phone Number', 'phoneNumber'],
+        ['Email', 'email'],
+      ],
+    });
   }
 }
