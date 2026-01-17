@@ -3,7 +3,7 @@ import { Repository, RepositoryConstructor } from '@/core/repository/Repository'
 import { Router } from '@/core/router/Router';
 import { View, ViewConstructor } from '@/core/view/View';
 import { Paginated } from '@/lib/pagination';
-import prompts from 'prompts';
+import prompts, { PromptObject, Options, Answers } from 'prompts';
 
 export interface BrowsePagesOptions<T> {
   data: Paginated<T>;
@@ -18,8 +18,6 @@ export interface ControllerContext {
 export abstract class Controller {
   protected db: Postgres;
   protected router: Router;
-
-  protected ask = prompts;
 
   constructor(context: ControllerContext) {
     this.db = context.db;
@@ -74,7 +72,7 @@ export abstract class Controller {
 
       onPage(items, page);
 
-      const { action } = await this.ask({
+      const input = await this.ask({
         name: 'action',
         type: 'select',
         message: 'What would you like to do next?',
@@ -96,11 +94,33 @@ export abstract class Controller {
         ],
       });
 
-      if (!action) {
+      if (!input || !input.action) {
         break;
       }
 
+      const { action } = input;
+
       result = await action();
+    }
+  }
+
+  protected async ask<T extends string>(
+    questions: PromptObject<T> | PromptObject<T>[],
+    options?: Options
+  ): Promise<Answers<T> | null> {
+    try {
+      const response = await prompts(questions, {
+        ...options,
+        onCancel: (...args) => {
+          options?.onCancel?.(...args);
+
+          throw new Error('Prompt cancelled by user');
+        },
+      });
+
+      return response;
+    } catch {
+      return null;
     }
   }
 }

@@ -1,14 +1,16 @@
 import { Controller } from '@/core/controller/Controller';
+import { mandatory } from '@/lib/validation';
 import { LeadRepository } from '@/modules/lead/Lead.repository';
-import { LeadStatus, UpdateLeadFields } from '@/modules/lead/Lead.entity';
+import { LeadStatus } from '@/modules/lead/Lead.entity';
 import { LeadView } from '@/modules/lead/Lead.view';
+import { truthy } from '@/lib/functional';
 
 export class LeadController extends Controller {
   private repository = this.makeRepository(LeadRepository);
   private view = this.makeView(LeadView);
 
   public async run(): Promise<void> {
-    const { action } = await this.ask({
+    const input = await this.ask({
       name: 'action',
       type: 'select',
       message: 'Managing Leads. What would you like to do?',
@@ -20,15 +22,19 @@ export class LeadController extends Controller {
         { title: 'Create Random', value: () => this.createRandom() },
         { title: 'Update', value: () => this.update() },
         { title: 'Delete', value: () => this.delete() },
-        { title: 'Go Back', value: null },
+        { title: 'Go Back', value: () => this.router.back() },
       ],
     });
 
-    if (!action) {
+    if (!input) {
       this.router.back();
-    } else {
-      await action();
+
+      return;
     }
+
+    const { action } = input;
+
+    await action();
   }
 
   private list = async (): Promise<void> => {
@@ -45,18 +51,21 @@ export class LeadController extends Controller {
   }
 
   private find = async (): Promise<void> => {
-    const { id } = await this.ask({
+    const input = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter lead ID:',
       min: 1,
+      validate: mandatory('Lead ID is required'),
     });
 
-    if (!id) {
-      this.view.say('Cancelled.');
+    if (!input) {
+      this.view.say('Search cancelled.');
 
       return;
     }
+
+    const { id } = input;
 
     const lead = await this.repository.findById(id);
 
@@ -83,125 +92,121 @@ export class LeadController extends Controller {
   }
 
   private create = async (): Promise<void> => {
-    const { companyId } = await this.ask({
-      name: 'companyId',
-      type: 'number',
-      message: 'Enter company ID:',
-      min: 1,
-    });
+    const input = await this.ask([
+      {
+        name: 'companyId',
+        type: 'number',
+        message: 'Enter company ID:',
+        min: 1,
+        validate: mandatory('Company ID is required'),
+      },
+      {
+        name: 'customerId',
+        type: 'number',
+        message: 'Enter customer ID:',
+        min: 1,
+        validate: mandatory('Customer ID is required'),
+      },
+      {
+        name: 'status',
+        type: 'select',
+        message: 'Select lead status:',
+        choices: [
+          { title: 'Pending', value: LeadStatus.Pending },
+          { title: 'In Progress', value: LeadStatus.InProgress },
+          { title: 'Won', value: LeadStatus.Won },
+          { title: 'Lost', value: LeadStatus.Lost },
+        ],
+      },
+    ]);
 
-    if (!companyId) {
+    if (!input) {
       this.view.say('Lead creation cancelled.');
 
       return;
     }
 
-    const { customerId } = await this.ask({
-      name: 'customerId',
-      type: 'number',
-      message: 'Enter customer ID:',
-      min: 1,
-    });
-
-    if (!customerId) {
-      this.view.say('Lead creation cancelled.');
-
-      return;
-    }
-
-    const { status } = await this.ask({
-      name: 'status',
-      type: 'select',
-      message: 'Select lead status:',
-      choices: [
-        { title: 'Pending', value: LeadStatus.Pending },
-        { title: 'In Progress', value: LeadStatus.InProgress },
-        { title: 'Won', value: LeadStatus.Won },
-        { title: 'Lost', value: LeadStatus.Lost },
-      ],
-    });
-
-    const lead = await this.repository.create({
-      companyId,
-      customerId,
-      status,
-    });
+    const lead = await this.repository.create(input);
 
     this.view.say(`Lead created with id ${lead.id}`);
     this.view.showLead(lead);
   }
 
   private update = async (): Promise<void> => {
-    const { id } = await this.ask({
-      name: 'id',
-      type: 'number',
-      message: 'Enter lead ID to update:',
-      min: 1,
-    });
+    const input = await this.ask([
+      {
+        name: 'id',
+        type: 'number',
+        message: 'Enter lead ID to update:',
+        min: 1,
+        validate: mandatory('Lead ID is required'),
+      },
+      {
+        name: 'companyId',
+        type: 'number',
+        message: 'Enter new company ID (leave empty to skip):',
+        min: 1,
+      },
+      {
+        name: 'customerId',
+        type: 'number',
+        message: 'Enter new customer ID (leave empty to skip):',
+        min: 1,
+      },
+      {
+        name: 'status',
+        type: 'select',
+        message: 'Select new status (or skip):',
+        choices: [
+          { title: 'Pending', value: LeadStatus.Pending },
+          { title: 'In Progress', value: LeadStatus.InProgress },
+          { title: 'Won', value: LeadStatus.Won },
+          { title: 'Lost', value: LeadStatus.Lost },
+          { title: 'Skip', value: undefined },
+        ],
+      },
+    ]);
 
-    if (!id) {
-      this.view.say('Update cancelled.');
-
-      return;
-    }
-
-    const { companyId } = await this.ask({
-      name: 'companyId',
-      type: 'number',
-      message: 'Enter new company ID (leave empty to skip):',
-    });
-
-    const { customerId } = await this.ask({
-      name: 'customerId',
-      type: 'number',
-      message: 'Enter new customer ID (leave empty to skip):',
-    });
-
-    const { status } = await this.ask({
-      name: 'status',
-      type: 'select',
-      message: 'Select new status (or skip):',
-      choices: [
-        { title: 'Pending', value: LeadStatus.Pending },
-        { title: 'In Progress', value: LeadStatus.InProgress },
-        { title: 'Won', value: LeadStatus.Won },
-        { title: 'Lost', value: LeadStatus.Lost },
-        { title: 'Skip', value: null },
-      ],
-    });
-
-    const updates: UpdateLeadFields = {};
-
-    if (companyId) updates.companyId = companyId;
-    if (customerId) updates.customerId = customerId;
-    if (status) updates.status = status;
-
-    if (Object.keys(updates).length === 0) {
-      this.view.say('No changes made.');
+    if (!input) {
+      this.view.say('Lead update cancelled.');
 
       return;
     }
 
-    const lead = await this.repository.update(id, updates);
+    const { id, ...updates } = input;
+
+    console.log('Updates received:', updates);
+
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates)
+        .filter(([_, value]) => truthy(value)),
+    );
+
+    console.log('Filtered updates:', filteredUpdates);
+
+    const lead = await this.repository.update(id, filteredUpdates);
 
     this.view.say(`Lead ${lead.id} updated successfully`);
     this.view.showLead(lead);
   }
 
   private createRandom = async (): Promise<void> => {
-    const { count } = await this.ask({
+    const input = await this.ask({
       name: 'count',
       type: 'number',
       message: 'How many random leads to create?',
       min: 1,
       max: 250000,
+      validate: mandatory('Count is required'),
     });
 
-    if (!count) {
-      this.view.say('Cancelled.');
+    if (!input) {
+      this.view.say('Operation cancelled.');
 
       return;
     }
+
+    const { count } = input;
 
     const result = await this.repository.createRandom(count);
 
@@ -215,18 +220,21 @@ export class LeadController extends Controller {
   }
 
   private delete = async (): Promise<void> => {
-    const { id } = await this.ask({
+    const input = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter lead ID to delete:',
       min: 1,
+      validate: mandatory('Lead ID is required'),
     });
 
-    if (!id) {
-      this.view.say('Deletion cancelled.');
+    if (!input) {
+      this.view.say('Lead deletion cancelled.');
 
       return;
     }
+
+    const { id } = input;
 
     const lead = await this.repository.delete(id);
 

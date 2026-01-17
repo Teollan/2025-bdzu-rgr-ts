@@ -1,4 +1,6 @@
 import { Controller } from '@/core/controller/Controller';
+import { mandatory } from '@/lib/validation';
+import { truthy } from '@/lib/functional';
 import { CustomerRepository } from '@/modules/customer/Customer.repository';
 import { CustomerView } from '@/modules/customer/Customer.view';
 
@@ -7,45 +9,29 @@ export class CustomerController extends Controller {
   private view = this.makeView(CustomerView);
 
   public async run(): Promise<void> {
-    const { action } = await this.ask({
+    const input = await this.ask({
       name: 'action',
       type: 'select',
       message: 'Managing Customers. What would you like to do?',
       choices: [
-        {
-          title: 'List all',
-          value: () => this.list(),
-        },
-        {
-          title: 'Find by ID',
-          value: () => this.find(),
-        },
-        {
-          title: 'Find Customers Contacted by Sales Manager',
-          value: () => this.findCustomersContactedBySalesManager(),
-        },
-        {
-          title: 'Create',
-          value: () => this.create(),
-        },
-        {
-          title: 'Create Random',
-          value: () => this.createRandom(),
-        },
-        {
-          title: 'Update',
-          value: () => this.update(),
-        },
-        {
-          title: 'Delete',
-          value: () => this.delete(),
-        },
-        {
-          title: 'Go Back',
-          value: () => this.router.back(),
-        },
+        { title: 'List all', value: () => this.list() },
+        { title: 'Find by ID', value: () => this.find() },
+        { title: 'Find Customers Contacted by Sales Manager', value: () => this.findCustomersContactedBySalesManager() },
+        { title: 'Create', value: () => this.create() },
+        { title: 'Create Random', value: () => this.createRandom() },
+        { title: 'Update', value: () => this.update() },
+        { title: 'Delete', value: () => this.delete() },
+        { title: 'Go Back', value: () => this.router.back() },
       ],
     });
+
+    if (!input) {
+      this.router.back();
+
+      return;
+    }
+
+    const { action } = input;
 
     await action();
   }
@@ -64,18 +50,21 @@ export class CustomerController extends Controller {
   }
 
   private find = async (): Promise<void> => {
-    const { id } = await this.ask({
+    const input = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter customer ID:',
       min: 1,
+      validate: mandatory('Customer ID is required'),
     });
 
-    if (!id) {
-      this.view.say('Cancelled.');
+    if (!input) {
+      this.view.say('Search cancelled.');
 
       return;
     }
+
+    const { id } = input;
 
     const customer = await this.repository.findById(id);
 
@@ -89,31 +78,34 @@ export class CustomerController extends Controller {
   }
 
   private findCustomersContactedBySalesManager = async (): Promise<void> => {
-    const { salesManagerNameLike } = await this.ask({
-      name: 'salesManagerNameLike',
-      type: 'text',
-      message: 'Enter sales manager name (or part of it):',
-    });
+    const input = await this.ask([
+      {
+        name: 'salesManagerNameLike',
+        type: 'text',
+        message: 'Enter sales manager name (or part of it):',
+        validate: mandatory('Sales manager name is required'),
+      },
+      {
+        name: 'from',
+        type: 'date',
+        message: 'Enter start date (YYYY-MM-DD):',
+        initial: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+      },
+      {
+        name: 'to',
+        type: 'date',
+        message: 'Enter end date (YYYY-MM-DD):',
+        initial: new Date(),
+      }
+    ]);
 
-    if (!salesManagerNameLike) {
-      this.view.say('Cancelled.');
+    if (!input) {
+      this.view.say('Search cancelled.');
 
       return;
     }
 
-    const { from } = await this.ask({
-      name: 'from',
-      type: 'date',
-      message: 'Enter start date (YYYY-MM-DD):',
-      initial: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    });
-
-    const { to } = await this.ask({
-      name: 'to',
-      type: 'date',
-      message: 'Enter end date (YYYY-MM-DD):',
-      initial: new Date(),
-    });
+    const { salesManagerNameLike, from, to } = input;
 
     const result = await this.repository.findCustomersContactedBySalesManager({
       salesManagerNameLike,
@@ -131,136 +123,118 @@ export class CustomerController extends Controller {
   }
 
   private create = async (): Promise<void> => {
-    const { firstName } = await this.ask({
-      name: 'firstName',
-      type: 'text',
-      message: 'Enter first name:',
-    });
+    const input = await this.ask([
+      {
+        name: 'firstName',
+        type: 'text',
+        message: 'Enter first name:',
+        validate: mandatory('First name is required'),
+      },
+      {
+        name: 'lastName',
+        type: 'text',
+        message: 'Enter last name:',
+        validate: mandatory('Last name is required'),
+      },
+      {
+        name: 'phoneNumber',
+        type: 'text',
+        message: 'Enter phone number:',
+        validate: mandatory('Phone number is required'),
+      },
+      {
+        name: 'email',
+        type: 'text',
+        message: 'Enter email:',
+        validate: mandatory('Email is required'),
+      },
+    ]);
 
-    if (!firstName) {
+    if (!input) {
       this.view.say('Customer creation cancelled.');
 
       return;
     }
 
-    const { lastName } = await this.ask({
-      name: 'lastName',
-      type: 'text',
-      message: 'Enter last name:',
-    });
-
-    if (!lastName) {
-      this.view.say('Customer creation cancelled.');
-
-      return;
-    }
-
-    const { phoneNumber } = await this.ask({
-      name: 'phoneNumber',
-      type: 'text',
-      message: 'Enter phone number:',
-    });
-
-    if (!phoneNumber) {
-      this.view.say('Customer creation cancelled.');
-
-      return;
-    }
-
-    const { email } = await this.ask({
-      name: 'email',
-      type: 'text',
-      message: 'Enter email:',
-    });
-
-    if (!email) {
-      this.view.say('Customer creation cancelled.');
-
-      return;
-    }
-
-    const customer = await this.repository.create({
-      firstName,
-      lastName,
-      phoneNumber,
-      email,
-    });
+    const customer = await this.repository.create(input);
 
     this.view.say(`Customer created with id ${customer.id}`);
     this.view.showCustomer(customer);
   }
 
   private update = async (): Promise<void> => {
-    const { id } = await this.ask({
-      name: 'id',
-      type: 'number',
-      message: 'Enter customer ID to update:',
-      min: 1,
-    });
+    const input = await this.ask([
+      {
+        name: 'id',
+        type: 'number',
+        message: 'Enter customer ID to update:',
+        min: 1,
+        validate: mandatory('Customer ID is required'),
+      },
+      {
+        name: 'firstName',
+        type: 'text',
+        message: 'Enter new first name (leave empty to skip):',
+      },
+      {
+        name: 'lastName',
+        type: 'text',
+        message: 'Enter new last name (leave empty to skip):',
+      },
+      {
+        name: 'phoneNumber',
+        type: 'text',
+        message: 'Enter new phone number (leave empty to skip):',
+      },
+      {
+        name: 'email',
+        type: 'text',
+        message: 'Enter new email (leave empty to skip):',
+      },
+    ]);
 
-    if (!id) {
-      this.view.say('Update cancelled.');
+    if (!input) {
+      this.view.say('Customer update cancelled.');
 
       return;
     }
 
-    const { firstName } = await this.ask({
-      name: 'firstName',
-      type: 'text',
-      message: 'Enter new first name (leave empty to skip):',
-    });
+    const { id, ...updates } = input;
 
-    const { lastName } = await this.ask({
-      name: 'lastName',
-      type: 'text',
-      message: 'Enter new last name (leave empty to skip):',
-    });
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates)
+        .filter(([_, value]) => truthy(value)),
+    );
 
-    const { phoneNumber } = await this.ask({
-      name: 'phoneNumber',
-      type: 'text',
-      message: 'Enter new phone number (leave empty to skip):',
-    });
-
-    const { email } = await this.ask({
-      name: 'email',
-      type: 'text',
-      message: 'Enter new email (leave empty to skip):',
-    });
-
-    const updates: Record<string, string> = {};
-
-    if (firstName) updates.firstName = firstName;
-    if (lastName) updates.lastName = lastName;
-    if (phoneNumber) updates.phoneNumber = phoneNumber;
-    if (email) updates.email = email;
-
-    if (Object.keys(updates).length === 0) {
+    if (Object.keys(filteredUpdates).length === 0) {
       this.view.say('No changes made.');
 
       return;
     }
 
-    const customer = await this.repository.update(id, updates);
+    const customer = await this.repository.update(id, filteredUpdates);
 
     this.view.say(`Customer ${customer.id} updated successfully`);
     this.view.showCustomer(customer);
   }
 
   private createRandom = async (): Promise<void> => {
-    const { count } = await this.ask({
+    const input = await this.ask({
       name: 'count',
       type: 'number',
       message: 'How many random customers to create?',
       min: 1,
       max: 250000,
+      validate: mandatory('Count is required'),
     });
 
-    if (!count) {
-      this.view.say('Cancelled.');
+    if (!input) {
+      this.view.say('Operation cancelled.');
 
       return;
     }
+
+    const { count } = input;
 
     const result = await this.repository.createRandom(count);
 
@@ -274,18 +248,21 @@ export class CustomerController extends Controller {
   }
 
   private delete = async (): Promise<void> => {
-    const { id } = await this.ask({
+    const input = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter customer ID to delete:',
       min: 1,
+      validate: mandatory('Customer ID is required'),
     });
 
-    if (!id) {
-      this.view.say('Deletion cancelled.');
+    if (!input) {
+      this.view.say('Customer deletion cancelled.');
 
       return;
     }
+
+    const { id } = input;
 
     const customer = await this.repository.delete(id);
 

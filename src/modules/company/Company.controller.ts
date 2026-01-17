@@ -1,4 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
+import { mandatory } from '@/lib/validation';
 import { CompanyRepository } from '@/modules/company/Company.repository';
 import { CompanyView } from '@/modules/company/Company.view';
 
@@ -7,45 +8,29 @@ export class CompanyController extends Controller {
   private view = this.makeView(CompanyView);
 
   public async run(): Promise<void> {
-    const { action } = await this.ask({
+    const input = await this.ask({
       name: 'action',
       type: 'select',
       message: 'Managing Companies. What would you like to do?',
       choices: [
-        {
-          title: 'List all',
-          value: () => this.list(),
-        },
-        {
-          title: 'Find by ID',
-          value: () => this.find(),
-        },
-        {
-          title: 'Find Companies with Large Customer Bases',
-          value: () => this.findCompaniesWithLargeCustomerBases(),
-        },
-        {
-          title: 'Create',
-          value: () => this.create(),
-        },
-        {
-          title: 'Create Random',
-          value: () => this.createRandom(),
-        },
-        {
-          title: 'Update',
-          value: () => this.update(),
-        },
-        {
-          title: 'Delete',
-          value: () => this.delete(),
-        },
-        {
-          title: 'Go Back',
-          value: () => this.router.back(),
-        },
+        { title: 'List all', value: () => this.list() },
+        { title: 'Find by ID', value: () => this.find() },
+        { title: 'Find Companies with Large Customer Bases', value: () => this.findCompaniesWithLargeCustomerBases() },
+        { title: 'Create', value: () => this.create() },
+        { title: 'Create Random', value: () => this.createRandom() },
+        { title: 'Update', value: () => this.update() },
+        { title: 'Delete', value: () => this.delete() },
+        { title: 'Go Back', value: () => this.router.back() },
       ],
     });
+
+    if (!input) {
+      this.router.back();
+
+      return;
+    }
+
+    const { action } = input;
 
     await action();
   }
@@ -64,18 +49,21 @@ export class CompanyController extends Controller {
   }
 
   private find = async (): Promise<void> => {
-    const { id } = await this.ask({
+    const input = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter company ID:',
       min: 1,
+      validate: mandatory('Company ID is required'),
     });
 
-    if (!id) {
-      this.view.say('Cancelled.');
+    if (!input) {
+      this.view.say('Search cancelled.');
 
       return;
     }
+
+    const { id } = input;
 
     const company = await this.repository.findById(id);
 
@@ -89,13 +77,22 @@ export class CompanyController extends Controller {
   }
 
   private findCompaniesWithLargeCustomerBases = async (): Promise<void> => {
-    const { minClients } = await this.ask({
+    const input = await this.ask({
       name: 'minClients',
       type: 'number',
       message: 'Enter minimum number of customers:',
       initial: 20,
       min: 0,
+      validate: mandatory('Minimum number of customers is required'),
     });
+
+    if (!input) {
+      this.view.say('Search cancelled.');
+
+      return;
+    }
+
+    const { minClients } = input;
 
     const result = await this.repository.findCompaniesWithLargeCustomerBases(minClients);
 
@@ -110,37 +107,48 @@ export class CompanyController extends Controller {
   }
 
   private create = async (): Promise<void> => {
-    const { name } = await this.ask({
+    const input = await this.ask({
       name: 'name',
       type: 'text',
       message: 'Enter company name:',
+      validate: mandatory('Company name is required'),
     });
 
-    if (!name) {
+    if (!input) {
       this.view.say('Company creation cancelled.');
 
       return;
     }
 
-    const company = await this.repository.create({ name });
+    const company = await this.repository.create(input);
 
     this.view.say(`Company created with id ${company.id}`);
     this.view.showCompany(company);
   }
 
   private update = async (): Promise<void> => {
-    const { id } = await this.ask({
-      name: 'id',
-      type: 'number',
-      message: 'Enter company ID to update:',
-      min: 1,
-    });
+    const input = await this.ask([
+      {
+        name: 'id',
+        type: 'number',
+        message: 'Enter company ID to update:',
+        min: 1,
+        validate: mandatory('Company ID is required'),
+      },
+      {
+        name: 'name',
+        type: 'text',
+        message: 'Enter new company name (leave empty to skip):',
+      },
+    ]);
 
-    const { name } = await this.ask({
-      name: 'name',
-      type: 'text',
-      message: 'Enter new company name (leave empty to skip):',
-    });
+    if (!input) {
+      this.view.say('Company update cancelled.');
+
+      return;
+    }
+
+    const { id, name } = input;
 
     if (!name) {
       this.view.say('No changes made.');
@@ -155,19 +163,22 @@ export class CompanyController extends Controller {
   }
 
   private createRandom = async (): Promise<void> => {
-    const { count } = await this.ask({
+    const input = await this.ask({
       name: 'count',
       type: 'number',
       message: 'How many random companies to create?',
       min: 1,
       max: 250000,
+      validate: mandatory('Count is required'),
     });
 
-    if (!count) {
-      this.view.say('Cancelled.');
+    if (!input) {
+      this.view.say('Operation cancelled.');
 
       return;
     }
+
+    const { count } = input;
 
     const result = await this.repository.createRandom(count);
 
@@ -181,18 +192,21 @@ export class CompanyController extends Controller {
   }
 
   private delete = async (): Promise<void> => {
-    const { id } = await this.ask({
+    const input = await this.ask({
       name: 'id',
       type: 'number',
       message: 'Enter company ID to delete:',
       min: 1,
+      validate: mandatory('Company ID is required'),
     });
 
-    if (!id) {
-      this.view.say('Deletion cancelled.');
+    if (!input) {
+      this.view.say('Company deletion cancelled.');
 
       return;
     }
+
+    const { id } = input;
 
     const company = await this.repository.delete(id);
 

@@ -3,7 +3,7 @@ import { Controller } from '@/core/controller/Controller';
 
 export class HomeScreenController extends Controller {
   public async run(): Promise<void> {
-    const { route } = await this.ask({
+    const input = await this.ask({
       name: 'route',
       type: 'select',
       message: 'What would you like to do?',
@@ -31,9 +31,13 @@ export class HomeScreenController extends Controller {
       ],
     });
 
-    if (!route) {
+    if (!input || !input.route) {
       await App.stop();
+
+      return;
     }
+
+    const { route } = input;
 
     this.router.navigate(route);
   }
