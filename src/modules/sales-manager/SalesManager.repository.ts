@@ -96,7 +96,7 @@ export class SalesManagerRepository extends Repository {
   ): Promise<SalesManager> {
     const result = await this.sql<SalesManager[]>`
       UPDATE sales_managers
-      SET ${this.updates(fields)}
+      SET ${this.sql(fields)}
       WHERE id = ${id}
       RETURNING *
     `;

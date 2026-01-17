@@ -118,7 +118,7 @@ export class LeadRepository extends Repository {
   ): Promise<Lead> {
     const result = await this.sql<Lead[]>`
       UPDATE leads
-      SET ${this.updates(fields)}
+      SET ${this.sql(fields)}
       WHERE id = ${id}
       RETURNING *
     `;

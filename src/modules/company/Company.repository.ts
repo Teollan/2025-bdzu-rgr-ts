@@ -78,7 +78,7 @@ export class CompanyRepository extends Repository {
   ): Promise<Company> {
     const result = await this.sql<Company[]>`
       UPDATE companies
-      SET ${this.updates(fields)}
+      SET ${this.sql(fields)}
       WHERE id = ${id}
       RETURNING *
     `;

@@ -1,6 +1,6 @@
 import { Controller } from '@/core/controller/Controller';
 import { mandatory } from '@/lib/validation';
-import { truthy } from '@/lib/functional';
+import { isEmpty, takeTruthy } from '@/lib/object';
 import { CustomerRepository } from '@/modules/customer/Customer.repository';
 import { CustomerView } from '@/modules/customer/Customer.view';
 
@@ -201,18 +201,15 @@ export class CustomerController extends Controller {
 
     const { id, ...updates } = input;
 
-    const filteredUpdates = Object.fromEntries(
-      Object.entries(updates)
-        .filter(([_, value]) => truthy(value)),
-    );
+    const truthyUpdates = takeTruthy(updates);
 
-    if (Object.keys(filteredUpdates).length === 0) {
-      this.view.say('No changes made.');
+    if (isEmpty(truthyUpdates)) {
+      this.view.say('No changes. Customer update cancelled.');
 
       return;
     }
 
-    const customer = await this.repository.update(id, filteredUpdates);
+    const customer = await this.repository.update(id, truthyUpdates);
 
     this.view.say(`Customer ${customer.id} updated successfully`);
     this.view.showCustomer(customer);

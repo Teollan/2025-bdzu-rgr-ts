@@ -115,7 +115,7 @@ export class CustomerRepository extends Repository {
   ): Promise<Customer> {
     const result = await this.sql<Customer[]>`
       UPDATE customers
-      SET ${this.updates(fields)}
+      SET ${this.sql(fields)}
       WHERE id = ${id}
       RETURNING *
     `;

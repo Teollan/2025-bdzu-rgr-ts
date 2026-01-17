@@ -1,6 +1,6 @@
 import { Controller } from '@/core/controller/Controller';
 import { mandatory } from '@/lib/validation';
-import { truthy } from '@/lib/functional';
+import { isEmpty, takeTruthy } from '@/lib/object';
 import { SalesManagerRepository } from '@/modules/sales-manager/SalesManager.repository';
 import { SalesManagerView } from '@/modules/sales-manager/SalesManager.view';
 
@@ -198,18 +198,15 @@ export class SalesManagerController extends Controller {
 
     const { id, ...updates } = input;
 
-    const filteredUpdates = Object.fromEntries(
-      Object.entries(updates)
-        .filter(([_, value]) => truthy(value)),
-    );
+    const truthyUpdates = takeTruthy(updates);
 
-    if (Object.keys(filteredUpdates).length === 0) {
-      this.view.say('No changes made.');
+    if (isEmpty(truthyUpdates)) {
+      this.view.say('No changes. Sales manager update cancelled.');
 
       return;
     }
 
-    const salesManager = await this.repository.update(id, filteredUpdates);
+    const salesManager = await this.repository.update(id, truthyUpdates);
 
     this.view.say(`Sales manager ${salesManager.id} updated successfully`);
     this.view.showSalesManager(salesManager);

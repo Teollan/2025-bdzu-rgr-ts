@@ -1,4 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
+import { isEmpty, takeTruthy } from '@/lib/object';
 import { mandatory } from '@/lib/validation';
 import { CompanyRepository } from '@/modules/company/Company.repository';
 import { CompanyView } from '@/modules/company/Company.view';
@@ -148,15 +149,17 @@ export class CompanyController extends Controller {
       return;
     }
 
-    const { id, name } = input;
+    const { id, ...updates } = input;
 
-    if (!name) {
-      this.view.say('No changes made.');
+    const truthyUpdates = takeTruthy(updates);
+
+    if (isEmpty(truthyUpdates)) {
+      this.view.say('No changes. Company update cancelled.');
 
       return;
     }
 
-    const company = await this.repository.update(id, { name });
+    const company = await this.repository.update(id, truthyUpdates);
 
     this.view.say(`Company ${company.id} updated successfully`);
     this.view.showCompany(company);

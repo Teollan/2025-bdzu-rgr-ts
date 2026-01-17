@@ -3,7 +3,7 @@ import { mandatory } from '@/lib/validation';
 import { LeadRepository } from '@/modules/lead/Lead.repository';
 import { LeadStatus } from '@/modules/lead/Lead.entity';
 import { LeadView } from '@/modules/lead/Lead.view';
-import { truthy } from '@/lib/functional';
+import { isEmpty, takeTruthy } from '@/lib/object';
 
 export class LeadController extends Controller {
   private repository = this.makeRepository(LeadRepository);
@@ -175,16 +175,15 @@ export class LeadController extends Controller {
 
     const { id, ...updates } = input;
 
-    console.log('Updates received:', updates);
+    const truthyUpdates = takeTruthy(updates);
 
-    const filteredUpdates = Object.fromEntries(
-      Object.entries(updates)
-        .filter(([_, value]) => truthy(value)),
-    );
+    if (isEmpty(truthyUpdates)) {
+      this.view.say('No changes. Lead update cancelled.');
 
-    console.log('Filtered updates:', filteredUpdates);
+      return;
+    }
 
-    const lead = await this.repository.update(id, filteredUpdates);
+    const lead = await this.repository.update(id, truthyUpdates);
 
     this.view.say(`Lead ${lead.id} updated successfully`);
     this.view.showLead(lead);
