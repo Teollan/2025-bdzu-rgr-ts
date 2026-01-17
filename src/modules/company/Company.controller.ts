@@ -21,6 +21,10 @@ export class CompanyController extends Controller {
           value: () => this.find(),
         },
         {
+          title: 'Find Companies with Large Customer Bases',
+          value: () => this.findCompaniesWithLargeCustomerBases(),
+        },
+        {
           title: 'Create',
           value: () => this.create(),
         },
@@ -115,6 +119,59 @@ export class CompanyController extends Controller {
     }
 
     this.view.one(company);
+  }
+
+  private findCompaniesWithLargeCustomerBases = async (): Promise<void> => {
+    const { minClients } = await this.io.ask({
+      name: 'minClients',
+      type: 'number',
+      message: 'Enter minimum number of customers:',
+      min: 1,
+    });
+
+    let result = await this.repository.findCompaniesWithLargeCustomerBases(minClients);
+
+    while (true) {
+      const { items, limit, offset, next, prev } = result;
+      const page = Math.floor(offset / limit) + 1;
+
+      if (items.length === 0) {
+        this.io.say('No companies found with large customer bases.');
+
+        return;
+      }
+
+      this.io.say(`Companies with at least ${minClients} customers (page ${page}):`);
+      this.view.companiesWithCustomerCount(items);
+
+      const { action } = await this.io.ask({
+        name: 'action',
+        type: 'select',
+        message: 'What would you like to do next?',
+        choices: [
+          {
+            title: 'Previous Page',
+            value: prev,
+            disabled: !prev,
+          },
+          {
+            title: 'Next Page',
+            value: next,
+            disabled: !next,
+          },
+          {
+            title: 'Done',
+            value: null,
+          },
+        ],
+      });
+
+      if (!action) {
+        break;
+      }
+
+      result = await action();
+    }
   }
 
   private create = async (): Promise<void> => {

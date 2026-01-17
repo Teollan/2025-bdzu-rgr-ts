@@ -12,38 +12,22 @@ export class SalesManagerController extends Controller {
       type: 'select',
       message: 'Managing Sales Managers. What would you like to do?',
       choices: [
-        {
-          title: 'List all',
-          value: () => this.list(),
-        },
-        {
-          title: 'Find by ID',
-          value: () => this.find(),
-        },
-        {
-          title: 'Create',
-          value: () => this.create(),
-        },
-        {
-          title: 'Create Random',
-          value: () => this.createRandom(),
-        },
-        {
-          title: 'Update',
-          value: () => this.update(),
-        },
-        {
-          title: 'Delete',
-          value: () => this.delete(),
-        },
-        {
-          title: 'Go Back',
-          value: () => this.router.back(),
-        },
+        { title: 'List all', value: () => this.list() },
+        { title: 'Find by ID', value: () => this.find() },
+        { title: 'Find Top Performers by Company', value: () => this.findTopPerformersByCompany() },
+        { title: 'Create', value: () => this.create() },
+        { title: 'Create Random', value: () => this.createRandom() },
+        { title: 'Update', value: () => this.update() },
+        { title: 'Delete', value: () => this.delete() },
+        { title: 'Go Back', value: null },
       ],
     });
 
-    await action();
+    if (!action) {
+      this.router.back();
+    } else {
+      await action();
+    }
   }
 
   private list = async (): Promise<void> => {
@@ -115,6 +99,52 @@ export class SalesManagerController extends Controller {
     }
 
     this.view.one(salesManager);
+  }
+
+  findTopPerformersByCompany = async (): Promise<void> => {
+    const { companyId } = await this.io.ask({
+      name: 'companyId',
+      type: 'number',
+      message: 'Enter company ID:',
+      min: 1,
+      validate: (value: number) => Boolean(value) || 'Company ID is required',
+    });
+
+    const { from } = await this.io.ask({
+      name: 'from',
+      type: 'date',
+      message: 'Enter start date (from):',
+    });
+
+    const { to } = await this.io.ask({
+      name: 'to',
+      type: 'date',
+      message: 'Enter end date (to):',
+    });
+
+    const { targetConversionRate } = await this.io.ask({
+      name: 'targetConversionRate',
+      type: 'number',
+      message: 'Enter target conversion rate (%):',
+      min: 0,
+      max: 100,
+      initial: 20,
+    });
+
+    const result = await this.repository.findTopPerformersByCompany({
+      companyId,
+      timeframe: { from, to },
+      targetConversionRate: targetConversionRate / 100,
+    });
+
+    if (result.length === 0) {
+      this.io.say('No sales managers found matching the criteria.');
+
+      return;
+    }
+
+    this.io.say(`Top performing sales managers who reached the target conversion rate of ${targetConversionRate} for company #${companyId} from [${from.toDateString()}] to [${to.toDateString()}]:`);
+    this.view.many(result);
   }
 
   private create = async (): Promise<void> => {

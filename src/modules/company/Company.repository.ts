@@ -1,6 +1,6 @@
 import { Repository } from "@/core/repository/Repository";
 import { paginate, Paginated, pseudoPaginate } from "@/lib/pagination";
-import { Company, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/Company.entity";
+import { Company, CompanyWithCustomerCount, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/Company.entity";
 
 export class CompanyRepository extends Repository {
   async findById(id: number): Promise<Company | null> {
@@ -17,7 +17,23 @@ export class CompanyRepository extends Repository {
     return result[0];
   }
 
-  list(): Promise<Paginated<Company>> {
+  async findCompaniesWithLargeCustomerBases(minClients: number): Promise<Paginated<CompanyWithCustomerCount>> {
+    return paginate(({ limit, offset }) => this.sql<CompanyWithCustomerCount[]>`
+      SELECT
+        com.name as company_name,
+        COUNT(cus.id) AS customer_count
+      FROM companies com
+      INNER JOIN leads l ON com.id = l.company_id
+      INNER JOIN customers cus ON cus.id = l.customer_id
+      GROUP BY com.id
+      HAVING COUNT(cus.id) >= ${minClients}
+      ORDER BY customer_count DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `);
+  }
+
+  async list(): Promise<Paginated<Company>> {
     return paginate(({ limit, offset }) => this.sql<Company[]>`
       SELECT *
       FROM companies
@@ -38,7 +54,7 @@ export class CompanyRepository extends Repository {
     return result[0];
   }
 
-  createRandom(count: number): Promise<Paginated<Company>> {
+  async createRandom(count: number): Promise<Paginated<Company>> {
     return pseudoPaginate(() => this.sql<Company[]>`
       WITH lookup AS (
         SELECT concat_ws(' ', adjective, noun, designator) AS name

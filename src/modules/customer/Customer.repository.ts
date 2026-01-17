@@ -1,5 +1,6 @@
 import { Repository } from "@/core/repository/Repository";
 import { paginate, Paginated, pseudoPaginate } from "@/lib/pagination";
+import { Timeframe } from '@/lib/timeframe';
 import { CreateCustomerFields, Customer, UpdateCustomerFields } from "@/modules/customer/Customer.entity";
 
 export class CustomerRepository extends Repository {
@@ -17,7 +18,30 @@ export class CustomerRepository extends Repository {
     return result[0];
   }
 
-  list(): Promise<Paginated<Customer>> {
+  async findCustomersContactedBySalesManager({
+    salesManagerNameLike,
+    timeframe,
+  }: {
+    salesManagerNameLike: string; 
+    timeframe: Timeframe;
+  }): Promise<Paginated<Customer>> {
+    return paginate(({ limit, offset }) => this.sql<Customer[]>`
+      SELECT DISTINCT cus.*
+      FROM customers cus
+      JOIN leads l ON cus.id = l.customer_id
+      JOIN sales_manager_leads sml ON l.id = sml.lead_id
+      JOIN sales_managers sm ON sml.sales_manager_id = sm.id
+      WHERE concat(sm.first_name, ' ', sm.last_name) ILIKE ${`%${salesManagerNameLike}%`}
+        AND l.created_at >= ${timeframe.from}
+        AND l.created_at <= ${timeframe.to}
+      GROUP BY l.status, cus.id
+      ORDER BY cus.id
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `);
+  }
+
+  async list(): Promise<Paginated<Customer>> {
     return paginate(({ limit, offset }) => this.sql<Customer[]>`
       SELECT * FROM customers LIMIT ${limit} OFFSET ${offset}
     `);
@@ -41,7 +65,7 @@ export class CustomerRepository extends Repository {
   createRandom(count: number): Promise<Paginated<Customer>> {
     return pseudoPaginate(() => this.sql<Customer[]>`
       WITH lookup AS (
-        SELECT first_name, last_name, lower(concat(first_name, '.', last_name, '@', domain)) AS email
+        SELECT first_name, last_name, domain as email_domain
         FROM first_names, last_names, email_domains
         ORDER BY random()
       )
@@ -49,7 +73,18 @@ export class CustomerRepository extends Repository {
       SELECT
         first_name,
         last_name,
-        email,
+        lower(concat(
+          first_name,
+          '.',
+          last_name,
+          '.',
+          chr(65 + (random() * 26)::int),
+          chr(65 + (random() * 26)::int),
+          chr(65 + (random() * 26)::int),
+          chr(65 + (random() * 26)::int),
+          '@',
+          email_domain
+        )) AS email,
         concat(
           '380',
           (random() * 9)::int::text,
@@ -69,6 +104,7 @@ export class CustomerRepository extends Repository {
         OFFSET (i % (SELECT count(*) FROM lookup))
         LIMIT 1
       ) AS t1
+      ON CONFLICT DO NOTHING
       RETURNING *
     `);
   }

@@ -21,6 +21,10 @@ export class CustomerController extends Controller {
           value: () => this.find(),
         },
         {
+          title: 'Find Customers Contacted by Sales Manager',
+          value: () => this.findCustomersContactedBySalesManager(),
+        },
+        {
           title: 'Create',
           value: () => this.create(),
         },
@@ -115,6 +119,81 @@ export class CustomerController extends Controller {
     }
 
     this.view.one(customer);
+  }
+
+  private findCustomersContactedBySalesManager = async (): Promise<void> => {
+    const { salesManagerNameLike } = await this.io.ask({
+      name: 'salesManagerNameLike',
+      type: 'text',
+      message: 'Enter sales manager name (or part of it):',
+    });
+
+    if (!salesManagerNameLike) {
+      this.io.say('Cancelled.');
+
+      return;
+    }
+
+    const { from } = await this.io.ask({
+      name: 'from',
+      type: 'date',
+      message: 'Enter start date (YYYY-MM-DD):',
+      initial: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    });
+
+    const { to } = await this.io.ask({
+      name: 'to',
+      type: 'date',
+      message: 'Enter end date (YYYY-MM-DD):',
+      initial: new Date(),
+    });
+
+    let result = await this.repository.findCustomersContactedBySalesManager({
+      salesManagerNameLike,
+      timeframe: { from, to },
+    });
+
+    while (true) {
+      const { items, limit, offset, next, prev } = result;
+      const page = Math.floor(offset / limit) + 1;
+
+      if (items.length === 0) {
+        this.io.say('No customers found for the given criteria.');
+
+        return;
+      }
+
+      this.io.say(`Customers contacted by sales managers matching "${salesManagerNameLike}" (page ${page}):`);
+      this.view.many(items);
+
+      const { action } = await this.io.ask({
+        name: 'action',
+        type: 'select',
+        message: 'What would you like to do next?',
+        choices: [
+          {
+            title: 'Previous Page',
+            value: prev,
+            disabled: !prev,
+          },
+          {
+            title: 'Next Page',
+            value: next,
+            disabled: !next,
+          },
+          {
+            title: 'Done',
+            value: null,
+          },
+        ],
+      });
+
+      if (!action) {
+        break;
+      }
+
+      result = await action();
+    }
   }
 
   private create = async (): Promise<void> => {

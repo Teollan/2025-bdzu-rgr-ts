@@ -13,38 +13,22 @@ export class LeadController extends Controller {
       type: 'select',
       message: 'Managing Leads. What would you like to do?',
       choices: [
-        { 
-          title: 'List all',
-          value: () => this.list(),
-        },
-        {
-          title: 'Find by ID',
-          value: () => this.find(),
-        },
-        {
-          title: 'Create',
-          value: () => this.create(),
-        },
-        {
-          title: 'Create Random',
-          value: () => this.createRandom(),
-        },
-        {
-          title: 'Update',
-          value: () => this.update(),
-        },
-        {
-          title: 'Delete',
-          value: () => this.delete(),
-        },
-        {
-          title: 'Go Back',
-          value: () => this.router.back(),
-        },
+        { title: 'List all', value: () => this.list() },
+        { title: 'Find by ID', value: () => this.find() },
+        { title: 'Assign Leads to Sales Managers', value: () => this.assignLeads() },
+        { title: 'Create', value: () => this.create() },
+        { title: 'Create Random', value: () => this.createRandom() },
+        { title: 'Update', value: () => this.update() },
+        { title: 'Delete', value: () => this.delete() },
+        { title: 'Go Back', value: null },
       ],
     });
 
-    await action();
+    if (!action) {
+      this.router.back();
+    } else {
+      await action();
+    }
   }
 
   private list = async (): Promise<void> => {
@@ -116,6 +100,46 @@ export class LeadController extends Controller {
     }
 
     this.view.one(lead);
+  }
+
+  private assignLeads = async (): Promise<void> => {
+    let result = await this.repository.assignLeadsToSalesManagers();
+
+    while (true) {
+      const { items, limit, offset, next, prev } = result;
+      const page = Math.floor(offset / limit) + 1;
+
+      this.io.say(`Assigned PENDING leads to sales managers (page ${page}):`);
+      this.view.manyAssigned(items);
+
+      const { action } = await this.io.ask({
+        name: 'action',
+        type: 'select',
+        message: 'What would you like to do next?',
+        choices: [
+          {
+            title: 'Previous Page',
+            value: prev,
+            disabled: !prev,
+          },
+          {
+            title: 'Next Page',
+            value: next,
+            disabled: !next,
+          },
+          {
+            title: 'Done',
+            value: null,
+          },
+        ],
+      });
+
+      if (!action) {
+        break;
+      }
+
+      result = await action();
+    }
   }
 
   private create = async (): Promise<void> => {

@@ -1,5 +1,5 @@
 import { View } from '@/core/view/View';
-import { Company } from '@/modules/company/Company.entity';
+import { Company, CompanyWithCustomerCount } from '@/modules/company/Company.entity';
 
 export class CompanyView extends View {
   one(company: Company): void {
@@ -8,5 +8,14 @@ export class CompanyView extends View {
 
   many(companies: Company[]): void {
     this.io.table(companies);
+  }
+
+  companiesWithCustomerCount(companies: CompanyWithCustomerCount[]): void {
+    this.io.table(companies, {
+      columns: [
+        ['Company Name', 'companyName'],
+        ['Customer Count', 'customerCount'],
+      ]
+    });
   }
 }

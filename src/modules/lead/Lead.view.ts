@@ -1,5 +1,5 @@
 import { View } from '@/core/view/View';
-import { Lead } from '@/modules/lead/Lead.entity';
+import { Lead, LeadCompanySalesManager } from '@/modules/lead/Lead.entity';
 
 export class LeadView extends View {
   one(lead: Lead): void {
@@ -8,5 +8,9 @@ export class LeadView extends View {
 
   many(leads: Lead[]): void {
     this.io.table(leads);
+  }
+
+  manyAssigned(items: LeadCompanySalesManager[]): void {
+    this.io.table(items);
   }
 }

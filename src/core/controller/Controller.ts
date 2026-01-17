@@ -1,6 +1,6 @@
 import { Postgres } from '@/core/database';
 import { InputOutput } from '@/core/io/InputOutput';
-import { Repository, RepositoryConstructor } from '@/core/repository';
+import { Repository, RepositoryConstructor } from '@/core/repository/Repository';
 import { Router } from '@/core/router/Router';
 import { View, ViewConstructor } from '@/core/view/View';
 
