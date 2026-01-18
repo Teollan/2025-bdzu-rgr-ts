@@ -1,6 +1,7 @@
 import { Repository } from "@/core/repository/Repository";
-import { paginate, Paginated, pseudoPaginate } from "@/lib/pagination";
-import { Timeframe } from '@/lib/timeframe';
+import { paginate, Page, paginateInMemory } from "@/lib/pagination";
+import { withExecutionTime, WithExecutionTime } from "@/lib/stopwatch";
+import { Range } from '@/lib/range';
 import { CreateCustomerFields, Customer, UpdateCustomerFields } from "@/modules/customer/Customer.entity";
 
 export class CustomerRepository extends Repository {
@@ -22,9 +23,9 @@ export class CustomerRepository extends Repository {
     salesManagerNameLike,
     timeframe,
   }: {
-    salesManagerNameLike: string; 
-    timeframe: Timeframe;
-  }): Promise<Paginated<Customer>> {
+    salesManagerNameLike: string;
+    timeframe: Range<Date>;
+  }): Promise<Page<Customer, WithExecutionTime>> {
     return paginate(({ limit, offset }) => this.sql<Customer[]>`
       SELECT DISTINCT cus.*
       FROM customers cus
@@ -38,10 +39,10 @@ export class CustomerRepository extends Repository {
       ORDER BY cus.id
       LIMIT ${limit}
       OFFSET ${offset}
-    `);
+    `, { middleware: withExecutionTime });
   }
 
-  async list(): Promise<Paginated<Customer>> {
+  async list(): Promise<Page<Customer>> {
     return paginate(({ limit, offset }) => this.sql<Customer[]>`
       SELECT * FROM customers LIMIT ${limit} OFFSET ${offset}
     `);
@@ -62,8 +63,8 @@ export class CustomerRepository extends Repository {
     return result[0];
   }
 
-  createRandom(count: number): Promise<Paginated<Customer>> {
-    return pseudoPaginate(() => this.sql<Customer[]>`
+  createRandom(count: number): Promise<Page<Customer>> {
+    return paginateInMemory(() => this.sql<Customer[]>`
       WITH lookup AS (
         SELECT first_name, last_name, domain as email_domain
         FROM first_names, last_names, email_domains

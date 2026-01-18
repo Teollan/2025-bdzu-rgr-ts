@@ -1,5 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
-import { mandatory } from '@/lib/validation';
+import { isMandatory } from '@/lib/validation';
 import { isEmpty, takeTruthy } from '@/lib/object';
 import { CustomerRepository } from '@/modules/customer/Customer.repository';
 import { CustomerView } from '@/modules/customer/Customer.view';
@@ -55,7 +55,7 @@ export class CustomerController extends Controller {
       type: 'number',
       message: 'Enter customer ID:',
       min: 1,
-      validate: mandatory('Customer ID is required'),
+      validate: isMandatory('Customer ID is required'),
     });
 
     if (!input) {
@@ -83,7 +83,7 @@ export class CustomerController extends Controller {
         name: 'salesManagerNameLike',
         type: 'text',
         message: 'Enter sales manager name (or part of it):',
-        validate: mandatory('Sales manager name is required'),
+        validate: isMandatory('Sales manager name is required'),
       },
       {
         name: 'from',
@@ -114,9 +114,10 @@ export class CustomerController extends Controller {
 
     await this.browsePages({
       data: result,
-      onPage: (items, page) => {
+      onPage: (items, page, { elapsed }) => {
         this.view.say(`Customers contacted by sales managers matching "${salesManagerNameLike}" (page ${page}):`);
         this.view.showCustomers(items);
+        this.view.say(`This page was retrieved in ${elapsed} ms.`);
       },
       onEmptyPage: () => this.view.say('No customers found for the given criteria.'),
     });
@@ -128,25 +129,25 @@ export class CustomerController extends Controller {
         name: 'firstName',
         type: 'text',
         message: 'Enter first name:',
-        validate: mandatory('First name is required'),
+        validate: isMandatory('First name is required'),
       },
       {
         name: 'lastName',
         type: 'text',
         message: 'Enter last name:',
-        validate: mandatory('Last name is required'),
+        validate: isMandatory('Last name is required'),
       },
       {
         name: 'phoneNumber',
         type: 'text',
         message: 'Enter phone number:',
-        validate: mandatory('Phone number is required'),
+        validate: isMandatory('Phone number is required'),
       },
       {
         name: 'email',
         type: 'text',
         message: 'Enter email:',
-        validate: mandatory('Email is required'),
+        validate: isMandatory('Email is required'),
       },
     ]);
 
@@ -169,7 +170,7 @@ export class CustomerController extends Controller {
         type: 'number',
         message: 'Enter customer ID to update:',
         min: 1,
-        validate: mandatory('Customer ID is required'),
+        validate: isMandatory('Customer ID is required'),
       },
       {
         name: 'firstName',
@@ -222,7 +223,7 @@ export class CustomerController extends Controller {
       message: 'How many random customers to create?',
       min: 1,
       max: 250000,
-      validate: mandatory('Count is required'),
+      validate: isMandatory('Count is required'),
     });
 
     if (!input) {
@@ -250,7 +251,7 @@ export class CustomerController extends Controller {
       type: 'number',
       message: 'Enter customer ID to delete:',
       min: 1,
-      validate: mandatory('Customer ID is required'),
+      validate: isMandatory('Customer ID is required'),
     });
 
     if (!input) {

@@ -1,5 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
-import { mandatory } from '@/lib/validation';
+import { isMandatory } from '@/lib/validation';
 import { isEmpty, takeTruthy } from '@/lib/object';
 import { SalesManagerRepository } from '@/modules/sales-manager/SalesManager.repository';
 import { SalesManagerView } from '@/modules/sales-manager/SalesManager.view';
@@ -16,7 +16,7 @@ export class SalesManagerController extends Controller {
       choices: [
         { title: 'List all', value: () => this.list() },
         { title: 'Find by ID', value: () => this.find() },
-        { title: 'Find Top Performers by Company', value: () => this.findTopPerformersByCompany() },
+        { title: 'Find Top Performers by Companies', value: () => this.findTopPerformersByCompanies() },
         { title: 'Create', value: () => this.create() },
         { title: 'Create Random', value: () => this.createRandom() },
         { title: 'Update', value: () => this.update() },
@@ -55,7 +55,7 @@ export class SalesManagerController extends Controller {
       type: 'number',
       message: 'Enter sales manager ID:',
       min: 1,
-      validate: mandatory('Sales manager ID is required'),
+      validate: isMandatory('Sales manager ID is required'),
     });
 
     if (!input) {
@@ -77,24 +77,35 @@ export class SalesManagerController extends Controller {
     this.view.showSalesManager(salesManager);
   }
 
-  private findTopPerformersByCompany = async (): Promise<void> => {
+  private findTopPerformersByCompanies = async (): Promise<void> => {
     const input = await this.ask([
       {
-        name: 'companyId',
+        name: 'companyIdRangeFrom',
         type: 'number',
-        message: 'Enter company ID:',
+        message: 'Enter company ID range start:',
         min: 1,
-        validate: mandatory('Company ID is required'),
+        validate: isMandatory('Company ID range start is required'),
       },
       {
-        name: 'from',
+        name: 'companyIdRangeTo',
+        type: 'number',
+        message: 'Enter company ID range end:',
+        min: 1,
+        validate: isMandatory('Company ID range end is required'),
+      },
+      {
+        name: 'dateRangeFrom',
         type: 'date',
         message: 'Enter start date (from):',
+        initial: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+        validate: isMandatory('Start date is required'),
       },
       {
-        name: 'to',
+        name: 'dateRangeTo',
         type: 'date',
         message: 'Enter end date (to):',
+        initial: new Date(),
+        validate: isMandatory('End date is required'),
       },
       {
         name: 'targetConversionRate',
@@ -112,22 +123,41 @@ export class SalesManagerController extends Controller {
       return;
     }
 
-    const { companyId, from, to, targetConversionRate } = input;
+    const {
+      companyIdRangeFrom,
+      companyIdRangeTo,
+      dateRangeFrom,
+      dateRangeTo,
+      targetConversionRate,
+    } = input;
 
-    const result = await this.repository.findTopPerformersByCompany({
-      companyId,
-      timeframe: { from, to },
-      targetConversionRate: targetConversionRate / 100,
-    });
-
-    if (result.length === 0) {
-      this.view.say('No sales managers found matching the criteria.');
+    if (companyIdRangeFrom > companyIdRangeTo) {
+      this.view.say(`Invalid company ID range: start [${companyIdRangeFrom}] cannot be greater than end [${companyIdRangeTo}].`);
 
       return;
     }
 
-    this.view.say(`Top performing sales managers who reached the target conversion rate of ${targetConversionRate}% for company #${companyId} from [${from.toDateString()}] to [${to.toDateString()}]:`);
-    this.view.showSalesManagers(result);
+    if (dateRangeFrom > dateRangeTo) {
+      this.view.say(`Invalid date range: start [${dateRangeFrom.toDateString()}] cannot be later than end [${dateRangeTo.toDateString()}].`);
+
+      return;
+    }
+
+    const result = await this.repository.findTopPerformersByCompanies({
+      companyIdRange: { from: companyIdRangeFrom, to: companyIdRangeTo },
+      timeframe: { from: dateRangeFrom, to: dateRangeTo },
+      targetConversionRate: targetConversionRate / 100,
+    });
+
+    this.browsePages({
+      data: result,
+      onPage: (items, page, { elapsed }) => {
+        this.view.say(`Top performing sales managers (page ${page}):`);
+        this.view.showSalesManagerStats(items);
+        this.view.say(`This page was retrieved in ${elapsed} ms.`);
+      },
+      onEmptyPage: () => this.view.say('No sales managers found matching the criteria.'),
+    });
   }
 
   private create = async (): Promise<void> => {
@@ -136,19 +166,19 @@ export class SalesManagerController extends Controller {
         name: 'companyId',
         type: 'number',
         message: 'Enter company ID:',
-        validate: mandatory('Company ID is required'),
+        validate: isMandatory('Company ID is required'),
       },
       {
         name: 'firstName',
         type: 'text',
         message: 'Enter first name:',
-        validate: mandatory('First name is required'),
+        validate: isMandatory('First name is required'),
       },
       {
         name: 'lastName',
         type: 'text',
         message: 'Enter last name:',
-        validate: mandatory('Last name is required'),
+        validate: isMandatory('Last name is required'),
       },
     ]);
 
@@ -171,7 +201,7 @@ export class SalesManagerController extends Controller {
         type: 'number',
         message: 'Enter sales manager ID to update:',
         min: 1,
-        validate: mandatory('Sales manager ID is required'),
+        validate: isMandatory('Sales manager ID is required'),
       },
       {
         name: 'companyId',
@@ -219,7 +249,7 @@ export class SalesManagerController extends Controller {
       message: 'How many random sales managers to create?',
       min: 1,
       max: 250000,
-      validate: mandatory('Count is required'),
+      validate: isMandatory('Count is required'),
     });
 
     if (!input) {
@@ -247,7 +277,7 @@ export class SalesManagerController extends Controller {
       type: 'number',
       message: 'Enter sales manager ID to delete:',
       min: 1,
-      validate: mandatory('Sales manager ID is required'),
+      validate: isMandatory('Sales manager ID is required'),
     });
 
     if (!input) {

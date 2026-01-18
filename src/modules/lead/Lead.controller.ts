@@ -1,5 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
-import { mandatory } from '@/lib/validation';
+import { isMandatory } from '@/lib/validation';
 import { LeadRepository } from '@/modules/lead/Lead.repository';
 import { LeadStatus } from '@/modules/lead/Lead.entity';
 import { LeadView } from '@/modules/lead/Lead.view';
@@ -56,7 +56,7 @@ export class LeadController extends Controller {
       type: 'number',
       message: 'Enter lead ID:',
       min: 1,
-      validate: mandatory('Lead ID is required'),
+      validate: isMandatory('Lead ID is required'),
     });
 
     if (!input) {
@@ -98,14 +98,14 @@ export class LeadController extends Controller {
         type: 'number',
         message: 'Enter company ID:',
         min: 1,
-        validate: mandatory('Company ID is required'),
+        validate: isMandatory('Company ID is required'),
       },
       {
         name: 'customerId',
         type: 'number',
         message: 'Enter customer ID:',
         min: 1,
-        validate: mandatory('Customer ID is required'),
+        validate: isMandatory('Customer ID is required'),
       },
       {
         name: 'status',
@@ -139,7 +139,7 @@ export class LeadController extends Controller {
         type: 'number',
         message: 'Enter lead ID to update:',
         min: 1,
-        validate: mandatory('Lead ID is required'),
+        validate: isMandatory('Lead ID is required'),
       },
       {
         name: 'companyId',
@@ -196,7 +196,7 @@ export class LeadController extends Controller {
       message: 'How many random leads to create?',
       min: 1,
       max: 250000,
-      validate: mandatory('Count is required'),
+      validate: isMandatory('Count is required'),
     });
 
     if (!input) {
@@ -224,7 +224,7 @@ export class LeadController extends Controller {
       type: 'number',
       message: 'Enter lead ID to delete:',
       min: 1,
-      validate: mandatory('Lead ID is required'),
+      validate: isMandatory('Lead ID is required'),
     });
 
     if (!input) {

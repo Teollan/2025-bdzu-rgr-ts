@@ -1,6 +1,6 @@
 import { Controller } from '@/core/controller/Controller';
 import { isEmpty, takeTruthy } from '@/lib/object';
-import { mandatory } from '@/lib/validation';
+import { isMandatory } from '@/lib/validation';
 import { CompanyRepository } from '@/modules/company/Company.repository';
 import { CompanyView } from '@/modules/company/Company.view';
 
@@ -55,7 +55,7 @@ export class CompanyController extends Controller {
       type: 'number',
       message: 'Enter company ID:',
       min: 1,
-      validate: mandatory('Company ID is required'),
+      validate: isMandatory('Company ID is required'),
     });
 
     if (!input) {
@@ -83,8 +83,7 @@ export class CompanyController extends Controller {
       type: 'number',
       message: 'Enter minimum number of customers:',
       initial: 20,
-      min: 0,
-      validate: mandatory('Minimum number of customers is required'),
+      min: 1,
     });
 
     if (!input) {
@@ -99,9 +98,10 @@ export class CompanyController extends Controller {
 
     await this.browsePages({
       data: result,
-      onPage: (items, page) => {
+      onPage: (items, page, { elapsed }) => {
         this.view.say(`Companies with at least ${minClients} customers (page ${page}):`);
         this.view.showCompaniesWithCustomerCount(items);
+        this.view.say(`This page was retrieved in ${elapsed} ms.`);
       },
       onEmptyPage: () => this.view.say(`No companies with more than the ${minClients} of customers found.`),
     });
@@ -112,7 +112,7 @@ export class CompanyController extends Controller {
       name: 'name',
       type: 'text',
       message: 'Enter company name:',
-      validate: mandatory('Company name is required'),
+      validate: isMandatory('Company name is required'),
     });
 
     if (!input) {
@@ -134,7 +134,7 @@ export class CompanyController extends Controller {
         type: 'number',
         message: 'Enter company ID to update:',
         min: 1,
-        validate: mandatory('Company ID is required'),
+        validate: isMandatory('Company ID is required'),
       },
       {
         name: 'name',
@@ -172,7 +172,7 @@ export class CompanyController extends Controller {
       message: 'How many random companies to create?',
       min: 1,
       max: 250000,
-      validate: mandatory('Count is required'),
+      validate: isMandatory('Count is required'),
     });
 
     if (!input) {
@@ -200,7 +200,7 @@ export class CompanyController extends Controller {
       type: 'number',
       message: 'Enter company ID to delete:',
       min: 1,
-      validate: mandatory('Company ID is required'),
+      validate: isMandatory('Company ID is required'),
     });
 
     if (!input) {

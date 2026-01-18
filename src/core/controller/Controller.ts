@@ -2,14 +2,18 @@ import { Postgres } from '@/core/database';
 import { Repository, RepositoryConstructor } from '@/core/repository/Repository';
 import { Router } from '@/core/router/Router';
 import { View, ViewConstructor } from '@/core/view/View';
-import { Paginated } from '@/lib/pagination';
+import { Page } from '@/lib/pagination';
 import prompts, { PromptObject, Options, Answers } from 'prompts';
 
-export interface BrowsePagesOptions<T> {
-  data: Paginated<T>;
-  onPage: (items: T[], page: number) => void;
-  onEmptyPage?: (items: T[], page: number) => void;
-}
+type PageCallback<T, M> = M extends void
+  ? (items: T[], page: number) => void
+  : (items: T[], page: number, meta: M) => void;
+
+export type BrowsePagesOptions<T, M = void> = {
+  data: Page<T, M>;
+  onPage: PageCallback<T, M>;
+  onEmptyPage?: PageCallback<T, M>;
+};
 
 export interface ControllerContext {
   db: Postgres;
@@ -40,37 +44,34 @@ export abstract class Controller {
     return new ViewClass();
   }
 
-  protected async browsePages<T>({
+  protected async browsePages<T, M = void>({
     data,
     onPage,
     onEmptyPage = onPage,
-  }: BrowsePagesOptions<T>): Promise<void> {
+  }: BrowsePagesOptions<T, M>): Promise<void> {
     let result = data;
 
+    const call = (fn: PageCallback<T, M>, items: T[], page: number, meta?: M) =>
+      (fn as (items: T[], page: number, meta?: M) => void)(items, page, meta);
+
     if (result.items.length === 0) {
-      onEmptyPage(result.items, 1);
+      call(onEmptyPage, result.items, 1, (result as { meta?: M }).meta);
 
       return;
     }
 
     if (!result.next && !result.prev) {
-      onPage(result.items, 1);
+      call(onPage, result.items, 1, (result as { meta?: M }).meta);
 
       return;
     }
 
     while (true) {
-      const {
-        items,
-        limit,
-        offset,
-        next,
-        prev,
-      } = result;
-
+      const { items, limit, offset, next, prev } = result;
+      const meta = (result as { meta?: M }).meta;
       const page = Math.floor(offset / limit) + 1;
 
-      onPage(items, page);
+      call(onPage, items, page, meta);
 
       const input = await this.ask({
         name: 'action',

@@ -1,5 +1,5 @@
 import { Repository } from "@/core/repository/Repository";
-import { paginate, pseudoPaginate, Paginated } from "@/lib/pagination";
+import { paginate, paginateInMemory, Page } from "@/lib/pagination";
 import { MONTH } from '@/lib/time';
 import { CreateLeadFields, Lead, LeadCompanySalesManager, UpdateLeadFields } from "@/modules/lead/Lead.entity";
 
@@ -21,8 +21,8 @@ export class LeadRepository extends Repository {
     return result[0];
   }
 
-  async assignLeadsToSalesManagers(): Promise<Paginated<LeadCompanySalesManager>> {
-    return pseudoPaginate(() => this.sql<LeadCompanySalesManager[]>`
+  async assignLeadsToSalesManagers(): Promise<Page<LeadCompanySalesManager>> {
+    return paginateInMemory(() => this.sql<LeadCompanySalesManager[]>`
       WITH created_sales_manager_leads AS (
         WITH unassigned_leads AS (
           SELECT
@@ -63,7 +63,7 @@ export class LeadRepository extends Repository {
     `);
   }
 
-  async list(): Promise<Paginated<Lead>> {
+  async list(): Promise<Page<Lead>> {
     return paginate(({ limit, offset }) => this.sql<Lead[]>`
       SELECT *
       FROM leads
@@ -86,7 +86,7 @@ export class LeadRepository extends Repository {
     return result[0];
   }
 
-  async createRandom(count: number, options: LeadCreateManyOptions = {}): Promise<Paginated<Lead>> {
+  async createRandom(count: number, options: LeadCreateManyOptions = {}): Promise<Page<Lead>> {
     const {
       createdAt = {}
     } = options;
@@ -96,7 +96,7 @@ export class LeadRepository extends Repository {
       to = new Date()
     } = createdAt;
 
-    return pseudoPaginate(() => this.sql<Lead[]>`
+    return paginateInMemory(() => this.sql<Lead[]>`
       WITH
         random_company_ids AS (SELECT id AS company_id FROM companies ORDER BY random()),
         random_customer_ids AS (SELECT id AS customer_id FROM customers ORDER BY random())

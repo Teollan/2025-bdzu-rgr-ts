@@ -5,28 +5,45 @@ export interface PaginationParams {
   offset: number;
 }
 
-export interface Paginated<T> {
+export type PaginationMiddleware<T, M> = (
+  fn: () => Promise<T[]>
+) => Promise<{ data: T[]; meta: M }>;
+
+export interface PaginateOptions<T, M> {
+  pageSize?: number;
+  middleware?: PaginationMiddleware<T, M>;
+}
+
+export type Page<T, M = void> = {
   items: T[];
   limit: number;
   offset: number;
-  next?: () => Promise<Paginated<T>>;
-  prev?: () => Promise<Paginated<T>>;
-}
+  next?: () => Promise<Page<T, M>>;
+  prev?: () => Promise<Page<T, M>>;
+} & (M extends void ? Record<string, never> : { meta: M });
 
-export function paginate<T>(
+export function paginate<T, M = void>(
   fetchPage: (pagination: PaginationParams) => Promise<T[]>,
-  pageSize: number = Environment.pageSize,
-): Promise<Paginated<T>> {
-  const getPaginated = async (offset: number): Promise<Paginated<T>> => {
-    const page = await fetchPage({ limit: pageSize + 1, offset });
+  options: PaginateOptions<T, M> = {},
+): Promise<Page<T, M>> {
+  const {
+    pageSize = Environment.pageSize,
+    middleware,
+  } = options;
 
-    const result: Paginated<T> = {
-      items: page.slice(0, pageSize),
+  const getPaginated = async (offset: number): Promise<Page<T, M>> => {
+    const { data, meta } = middleware
+      ? await middleware(() => fetchPage({ limit: pageSize + 1, offset }))
+      : { data: await fetchPage({ limit: pageSize + 1, offset }), meta: undefined };
+
+    const result = {
+      items: data.slice(0, pageSize),
       limit: pageSize,
       offset,
-    }
+      ...(meta !== undefined && { meta }),
+    } as Page<T, M>;
 
-    const hasNextPage = page.length > pageSize;
+    const hasNextPage = data.length > pageSize;
     const hasPrevPage = offset > 0;
 
     if (hasNextPage) {
@@ -43,10 +60,10 @@ export function paginate<T>(
   return getPaginated(0);
 }
 
-export function pseudoPaginate<T>(
+export function paginateInMemory<T>(
   fetchAll: () => Promise<T[]>,
   pageSize: number = Environment.pageSize,
-): Promise<Paginated<T>> {
+): Promise<Page<T>> {
   let cache: T[] | null = null;
 
   return paginate(async ({ offset, limit }) => {
@@ -55,5 +72,5 @@ export function pseudoPaginate<T>(
     }
 
     return cache.slice(offset, offset + limit);
-  }, pageSize);
+  }, { pageSize });
 }

@@ -1,6 +1,6 @@
-export type Validator<T> = (value: T) => true | string;
+export type Validator<T, V = Record<string, unknown>> = (value: T, values: V) => true | string;
 
-export const mandatory = <T>(
+export const isMandatory = <T>(
   message: string = 'This field is required'
 ): Validator<T> => {
   return (value: T) => {

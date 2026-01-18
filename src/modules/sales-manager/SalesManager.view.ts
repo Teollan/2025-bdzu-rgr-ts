@@ -1,5 +1,5 @@
 import { View } from '@/core/view/View';
-import { SalesManager } from '@/modules/sales-manager/SalesManager.entity';
+import { SalesManager, SalesManagerStats } from '@/modules/sales-manager/SalesManager.entity';
 
 export class SalesManagerView extends View {
   showSalesManager(salesManager: SalesManager): void {
@@ -13,6 +13,18 @@ export class SalesManagerView extends View {
         ['Company ID', 'companyId'],
         ['First Name', 'firstName'],
         ['Last Name', 'lastName'],
+      ],
+    });
+  }
+
+  showSalesManagerStats(stats: SalesManagerStats[]): void {
+    this.table(stats, {
+      columns: [
+        ['Company ID', 'companyId'],
+        ['Sales Manager', 'salesManagerName'],
+        ['Leads Assigned', 'leadsAssigned'],
+        ['Leads Won', 'leadsWon'],
+        ['Conversion Rate (%)', ({ conversionRate }) => (conversionRate * 100).toFixed(2)],
       ],
     });
   }
