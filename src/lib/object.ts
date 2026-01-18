@@ -11,4 +11,4 @@ export const takeTruthy = <T extends Record<string, unknown>>(item: T): Partial<
 
 export const isEmpty = <T extends Record<string, unknown>>(item: T): boolean => {
   return Object.keys(item).length === 0;
-}
+};

@@ -9,5 +9,5 @@ export const isMandatory = <T>(
     }
 
     return true;
-  }
-}
+  };
+};

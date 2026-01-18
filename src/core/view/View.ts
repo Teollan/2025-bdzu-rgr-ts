@@ -45,11 +45,11 @@ export abstract class View {
       const widths = values.map((value) => value.length);
 
       return Math.max(...widths);
-    }
+    };
 
     const transpose = (matrix: string[][]): string[][] => {
       return matrix[0].map((_, i) => matrix.map(row => row[i]));
-    }
+    };
 
     const namedColumns = blueprints.map(toNamedColumns);
 
@@ -65,7 +65,7 @@ export abstract class View {
       const parts = widths.map((width) => "-".repeat(width + 2));
 
       this.say(`+${parts.join("+")}+`);
-    }
+    };
 
     const drawRow = (values: string[]) => {
       const parts = values.map((cell, i) => (
@@ -73,7 +73,7 @@ export abstract class View {
       ));
 
       this.say(`|${parts.join("|")}|`);
-    }
+    };
 
     drawBorder();
 

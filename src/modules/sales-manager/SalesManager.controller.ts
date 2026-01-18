@@ -149,7 +149,7 @@ export class SalesManagerController extends Controller {
       targetConversionRate: targetConversionRate / 100,
     });
 
-    this.browsePages({
+    await this.browsePages({
       data: result,
       onPage: (items, page, { elapsed }) => {
         this.view.say(`Top performing sales managers (page ${page}):`);
