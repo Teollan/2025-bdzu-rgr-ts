@@ -1,4 +1,4 @@
-import { Repository } from "@/core/repository/Repository";
+import { Model } from "@/core/model/Model";
 import { paginate, paginateInMemory, Page } from "@/lib/pagination";
 import { MONTH } from '@/lib/time';
 import { CreateLeadFields, Lead, LeadCompanySalesManager, UpdateLeadFields } from "@/modules/lead/Lead.entity";
@@ -6,7 +6,7 @@ import { CreateLeadFields, Lead, LeadCompanySalesManager, UpdateLeadFields } fro
 interface LeadCreateManyOptions {
   createdAt?: { from?: Date; to?: Date };
 }
-export class LeadRepository extends Repository {
+export class LeadModel extends Model {
   async findById(id: number): Promise<Lead | null> {
     const result = await this.sql<Lead[]>`
       SELECT *

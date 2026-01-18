@@ -1,12 +1,12 @@
 import { Controller } from '@/core/controller/Controller';
 import { isMandatory } from '@/lib/validation';
-import { LeadRepository } from '@/modules/lead/Lead.repository';
+import { LeadModel } from '@/modules/lead/Lead.model';
 import { LeadStatus } from '@/modules/lead/Lead.entity';
 import { LeadView } from '@/modules/lead/Lead.view';
 import { isEmpty, takeTruthy } from '@/lib/object';
 
 export class LeadController extends Controller {
-  private repository = this.makeRepository(LeadRepository);
+  private model = this.makeModel(LeadModel);
   private view = this.makeView(LeadView);
 
   public async run(): Promise<void> {
@@ -39,7 +39,7 @@ export class LeadController extends Controller {
 
   private list = async (): Promise<void> => {
     try {
-      const result = await this.repository.list();
+      const result = await this.model.list();
 
       await this.browsePages({
         data: result,
@@ -72,7 +72,7 @@ export class LeadController extends Controller {
     const { id } = input;
 
     try {
-      const lead = await this.repository.findById(id);
+      const lead = await this.model.findById(id);
 
       if (!lead) {
         this.view.say(`Lead with id ${id} not found.`);
@@ -88,7 +88,7 @@ export class LeadController extends Controller {
 
   private assignLeads = async (): Promise<void> => {
     try {
-      const result = await this.repository.assignLeadsToSalesManagers();
+      const result = await this.model.assignLeadsToSalesManagers();
 
       await this.browsePages({
         data: result,
@@ -139,7 +139,7 @@ export class LeadController extends Controller {
     }
 
     try {
-      const lead = await this.repository.create(input);
+      const lead = await this.model.create(input);
 
       this.view.say(`Lead created with id ${lead.id}`);
       this.view.showLead(lead);
@@ -200,7 +200,7 @@ export class LeadController extends Controller {
     }
 
     try {
-      const lead = await this.repository.update(id, truthyUpdates);
+      const lead = await this.model.update(id, truthyUpdates);
 
       this.view.say(`Lead ${lead.id} updated successfully`);
       this.view.showLead(lead);
@@ -228,7 +228,7 @@ export class LeadController extends Controller {
     const { count } = input;
 
     try {
-      const result = await this.repository.createRandom(count);
+      const result = await this.model.createRandom(count);
 
       await this.browsePages({
         data: result,
@@ -260,7 +260,7 @@ export class LeadController extends Controller {
     const { id } = input;
 
     try {
-      const lead = await this.repository.delete(id);
+      const lead = await this.model.delete(id);
 
       this.view.say(`Lead ${lead.id} deleted successfully`);
       this.view.showLead(lead);

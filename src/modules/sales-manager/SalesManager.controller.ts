@@ -1,11 +1,11 @@
 import { Controller } from '@/core/controller/Controller';
 import { isMandatory } from '@/lib/validation';
 import { isEmpty, takeTruthy } from '@/lib/object';
-import { SalesManagerRepository } from '@/modules/sales-manager/SalesManager.repository';
+import { SalesManagerModel } from '@/modules/sales-manager/SalesManager.model';
 import { SalesManagerView } from '@/modules/sales-manager/SalesManager.view';
 
 export class SalesManagerController extends Controller {
-  private repository = this.makeRepository(SalesManagerRepository);
+  private model = this.makeModel(SalesManagerModel);
   private view = this.makeView(SalesManagerView);
 
   public async run(): Promise<void> {
@@ -38,7 +38,7 @@ export class SalesManagerController extends Controller {
 
   private list = async (): Promise<void> => {
     try {
-      const result = await this.repository.list();
+      const result = await this.model.list();
 
       await this.browsePages({
         data: result,
@@ -71,7 +71,7 @@ export class SalesManagerController extends Controller {
     const { id } = input;
 
     try {
-      const salesManager = await this.repository.findById(id);
+      const salesManager = await this.model.findById(id);
 
       if (!salesManager) {
         this.view.say(`Sales manager with id ${id} not found.`);
@@ -152,7 +152,7 @@ export class SalesManagerController extends Controller {
     }
 
     try {
-      const result = await this.repository.findTopPerformersByCompanies({
+      const result = await this.model.findTopPerformersByCompanies({
         companyIdRange: { from: companyIdRangeFrom, to: companyIdRangeTo },
         timeframe: { from: dateRangeFrom, to: dateRangeTo },
         targetConversionRate: targetConversionRate / 100,
@@ -201,7 +201,7 @@ export class SalesManagerController extends Controller {
     }
 
     try {
-      const salesManager = await this.repository.create(input);
+      const salesManager = await this.model.create(input);
 
       this.view.say(`Sales manager created with id ${salesManager.id}`);
       this.view.showSalesManager(salesManager);
@@ -253,7 +253,7 @@ export class SalesManagerController extends Controller {
     }
 
     try {
-      const salesManager = await this.repository.update(id, truthyUpdates);
+      const salesManager = await this.model.update(id, truthyUpdates);
 
       this.view.say(`Sales manager ${salesManager.id} updated successfully`);
       this.view.showSalesManager(salesManager);
@@ -281,7 +281,7 @@ export class SalesManagerController extends Controller {
     const { count } = input;
 
     try {
-      const result = await this.repository.createRandom(count);
+      const result = await this.model.createRandom(count);
 
       await this.browsePages({
         data: result,
@@ -313,7 +313,7 @@ export class SalesManagerController extends Controller {
     const { id } = input;
 
     try {
-      const salesManager = await this.repository.delete(id);
+      const salesManager = await this.model.delete(id);
 
       this.view.say(`Sales manager ${salesManager.id} deleted successfully`);
       this.view.showSalesManager(salesManager);

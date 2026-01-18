@@ -1,9 +1,9 @@
-import { Repository } from "@/core/repository/Repository";
+import { Model } from "@/core/model/Model";
 import { paginate, Page, paginateInMemory } from "@/lib/pagination";
 import { withExecutionTime, WithExecutionTime } from "@/lib/stopwatch";
 import { Company, CompanyWithCustomerCount, CreateCompanyFields, UpdateCompanyFields } from "@/modules/company/Company.entity";
 
-export class CompanyRepository extends Repository {
+export class CompanyModel extends Model {
   async findById(id: number): Promise<Company | null> {
     const result = await this.sql<Company[]>`
       SELECT *

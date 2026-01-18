@@ -1,5 +1,5 @@
 import { Postgres } from '@/core/database';
-import { Repository, RepositoryConstructor } from '@/core/repository/Repository';
+import { Model, ModelConstructor } from '@/core/model/Model';
 import { Router } from '@/core/router/Router';
 import { View, ViewConstructor } from '@/core/view/View';
 import { Page } from '@/lib/pagination';
@@ -30,10 +30,10 @@ export abstract class Controller {
 
   public abstract run(): Promise<void>;
 
-  protected makeRepository<T extends Repository>(
-    RepositoryClass: RepositoryConstructor<T>
+  protected makeModel<T extends Model>(
+    ModelClass: ModelConstructor<T>
   ): T {
-    return new RepositoryClass({
+    return new ModelClass({
       db: this.db,
     });
   }

@@ -1,11 +1,11 @@
 import { Controller } from '@/core/controller/Controller';
 import { isEmpty, takeTruthy } from '@/lib/object';
 import { isMandatory } from '@/lib/validation';
-import { CompanyRepository } from '@/modules/company/Company.repository';
+import { CompanyModel } from '@/modules/company/Company.model';
 import { CompanyView } from '@/modules/company/Company.view';
 
 export class CompanyController extends Controller {
-  private repository = this.makeRepository(CompanyRepository);
+  private model = this.makeModel(CompanyModel);
   private view = this.makeView(CompanyView);
 
   public async run(): Promise<void> {
@@ -38,7 +38,7 @@ export class CompanyController extends Controller {
 
   private list = async (): Promise<void> => {
     try {
-      const result = await this.repository.list();
+      const result = await this.model.list();
 
       await this.browsePages({
         data: result,
@@ -71,7 +71,7 @@ export class CompanyController extends Controller {
     const { id } = input;
 
     try {
-      const company = await this.repository.findById(id);
+      const company = await this.model.findById(id);
 
       if (!company) {
         this.view.say(`Company with id ${id} not found.`);
@@ -103,7 +103,7 @@ export class CompanyController extends Controller {
     const { minClients } = input;
 
     try {
-      const result = await this.repository.findCompaniesWithLargeCustomerBases(minClients);
+      const result = await this.model.findCompaniesWithLargeCustomerBases(minClients);
 
       await this.browsePages({
         data: result,
@@ -134,7 +134,7 @@ export class CompanyController extends Controller {
     }
 
     try {
-      const company = await this.repository.create(input);
+      const company = await this.model.create(input);
 
       this.view.say(`Company created with id ${company.id}`);
       this.view.showCompany(company);
@@ -176,7 +176,7 @@ export class CompanyController extends Controller {
     }
 
     try {
-      const company = await this.repository.update(id, truthyUpdates);
+      const company = await this.model.update(id, truthyUpdates);
 
       this.view.say(`Company ${company.id} updated successfully`);
       this.view.showCompany(company);
@@ -204,7 +204,7 @@ export class CompanyController extends Controller {
     const { count } = input;
 
     try {
-      const result = await this.repository.createRandom(count);
+      const result = await this.model.createRandom(count);
 
       await this.browsePages({
         data: result,
@@ -236,7 +236,7 @@ export class CompanyController extends Controller {
     const { id } = input;
 
     try {
-      const company = await this.repository.delete(id);
+      const company = await this.model.delete(id);
 
       this.view.say(`Company ${company.id} deleted successfully`);
       this.view.showCompany(company);

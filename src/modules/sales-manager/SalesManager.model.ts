@@ -1,4 +1,4 @@
-import { Repository } from "@/core/repository/Repository";
+import { Model } from "@/core/model/Model";
 import { paginate, paginateInMemory, Page } from "@/lib/pagination";
 import { CreateSalesManagerFields, SalesManager, SalesManagerStats, UpdateSalesManagerFields } from "@/modules/sales-manager/SalesManager.entity";
 import { WithExecutionTime, withExecutionTime } from '@/lib/stopwatch';
@@ -10,7 +10,7 @@ interface TopPerformersSearchParams {
   targetConversionRate: number;
 }
 
-export class SalesManagerRepository extends Repository {
+export class SalesManagerModel extends Model {
   async findById(id: number): Promise<SalesManager | null> {
     const result = await this.sql<SalesManager[]>`
       SELECT *

@@ -1,11 +1,11 @@
 import { Controller } from '@/core/controller/Controller';
 import { isMandatory } from '@/lib/validation';
 import { isEmpty, takeTruthy } from '@/lib/object';
-import { CustomerRepository } from '@/modules/customer/Customer.repository';
+import { CustomerModel } from '@/modules/customer/Customer.model';
 import { CustomerView } from '@/modules/customer/Customer.view';
 
 export class CustomerController extends Controller {
-  private repository = this.makeRepository(CustomerRepository);
+  private model = this.makeModel(CustomerModel);
   private view = this.makeView(CustomerView);
 
   public async run(): Promise<void> {
@@ -38,7 +38,7 @@ export class CustomerController extends Controller {
 
   private list = async (): Promise<void> => {
     try {
-      const result = await this.repository.list();
+      const result = await this.model.list();
 
       await this.browsePages({
         data: result,
@@ -71,7 +71,7 @@ export class CustomerController extends Controller {
     const { id } = input;
 
     try {
-      const customer = await this.repository.findById(id);
+      const customer = await this.model.findById(id);
 
       if (!customer) {
         this.view.say(`Customer with id ${id} not found.`);
@@ -116,7 +116,7 @@ export class CustomerController extends Controller {
     const { salesManagerNameLike, from, to } = input;
 
     try {
-      const result = await this.repository.findCustomersContactedBySalesManager({
+      const result = await this.model.findCustomersContactedBySalesManager({
         salesManagerNameLike,
         timeframe: { from, to },
       });
@@ -170,7 +170,7 @@ export class CustomerController extends Controller {
     }
 
     try {
-      const customer = await this.repository.create(input);
+      const customer = await this.model.create(input);
 
       this.view.say(`Customer created with id ${customer.id}`);
       this.view.showCustomer(customer);
@@ -227,7 +227,7 @@ export class CustomerController extends Controller {
     }
 
     try {
-      const customer = await this.repository.update(id, truthyUpdates);
+      const customer = await this.model.update(id, truthyUpdates);
 
       this.view.say(`Customer ${customer.id} updated successfully`);
       this.view.showCustomer(customer);
@@ -255,7 +255,7 @@ export class CustomerController extends Controller {
     const { count } = input;
 
     try {
-      const result = await this.repository.createRandom(count);
+      const result = await this.model.createRandom(count);
 
       await this.browsePages({
         data: result,
@@ -287,7 +287,7 @@ export class CustomerController extends Controller {
     const { id } = input;
 
     try {
-      const customer = await this.repository.delete(id);
+      const customer = await this.model.delete(id);
 
       this.view.say(`Customer ${customer.id} deleted successfully`);
       this.view.showCustomer(customer);
