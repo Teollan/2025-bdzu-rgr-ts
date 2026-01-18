@@ -219,13 +219,16 @@ export class CompanyController extends Controller {
   };
 
   private delete = async (): Promise<void> => {
-    const input = await this.ask({
-      name: 'id',
-      type: 'number',
-      message: 'Enter company ID to delete:',
-      min: 1,
-      validate: isMandatory('Company ID is required'),
-    });
+    const input = await this.ask([
+      {
+        name: 'id',
+        type: 'number',
+        message: 'Enter company ID to delete:',
+        min: 1,
+        validate: isMandatory('Company ID is required'),
+      },
+      
+    ]);
 
     if (!input) {
       this.view.say('Company deletion cancelled.');
@@ -234,6 +237,25 @@ export class CompanyController extends Controller {
     }
 
     const { id } = input;
+
+    this.view.say(`You are about to delete a Company with ID = ${id}.`);
+    this.view.say('Deleting a Company will also delete all related Sales Managers and Leads.');
+    this.view.say('This action cannot be undone!');
+
+    const confirmation = await this.ask({
+      name: 'confirm',
+      type: 'toggle',
+      message: `Are you sure you want to proceed?`,
+      initial: false,
+      active: 'yes',
+      inactive: 'no',
+    });
+
+    if (!confirmation || !confirmation.confirm) {
+      this.view.say('Company deletion cancelled.');
+
+      return;
+    }
 
     try {
       const company = await this.model.delete(id);
