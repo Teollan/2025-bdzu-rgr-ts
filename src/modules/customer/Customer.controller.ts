@@ -37,17 +37,21 @@ export class CustomerController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    const result = await this.repository.list();
+    try {
+      const result = await this.repository.list();
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Customers found (page ${page}):`);
-        this.view.showCustomers(items);
-      },
-      onEmptyPage: () => this.view.say('No customers found.'),
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Customers found (page ${page}):`);
+          this.view.showCustomers(items);
+        },
+        onEmptyPage: () => this.view.say('No customers found.'),
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to list customers`);
+    }
+  };
 
   private find = async (): Promise<void> => {
     const input = await this.ask({
@@ -66,16 +70,20 @@ export class CustomerController extends Controller {
 
     const { id } = input;
 
-    const customer = await this.repository.findById(id);
+    try {
+      const customer = await this.repository.findById(id);
 
-    if (!customer) {
-      this.view.say(`Customer with id ${id} not found.`);
+      if (!customer) {
+        this.view.say(`Customer with id ${id} not found.`);
 
-      return;
+        return;
+      }
+
+      this.view.showCustomer(customer);
+    } catch {
+      this.view.say(`[ERROR]: Failed to find customer`);
     }
-
-    this.view.showCustomer(customer);
-  }
+  };
 
   private findCustomersContactedBySalesManager = async (): Promise<void> => {
     const input = await this.ask([
@@ -107,21 +115,25 @@ export class CustomerController extends Controller {
 
     const { salesManagerNameLike, from, to } = input;
 
-    const result = await this.repository.findCustomersContactedBySalesManager({
-      salesManagerNameLike,
-      timeframe: { from, to },
-    });
+    try {
+      const result = await this.repository.findCustomersContactedBySalesManager({
+        salesManagerNameLike,
+        timeframe: { from, to },
+      });
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page, { elapsed }) => {
-        this.view.say(`Customers contacted by sales managers matching "${salesManagerNameLike}" (page ${page}):`);
-        this.view.showCustomers(items);
-        this.view.say(`This page was retrieved in ${elapsed} ms.`);
-      },
-      onEmptyPage: () => this.view.say('No customers found for the given criteria.'),
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page, { elapsed }) => {
+          this.view.say(`Customers contacted by sales managers matching "${salesManagerNameLike}" (page ${page}):`);
+          this.view.showCustomers(items);
+          this.view.say(`This page was retrieved in ${elapsed} ms.`);
+        },
+        onEmptyPage: () => this.view.say('No customers found for the given criteria.'),
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to find customers contacted by sales manager`);
+    }
+  };
 
   private create = async (): Promise<void> => {
     const input = await this.ask([
@@ -157,11 +169,15 @@ export class CustomerController extends Controller {
       return;
     }
 
-    const customer = await this.repository.create(input);
+    try {
+      const customer = await this.repository.create(input);
 
-    this.view.say(`Customer created with id ${customer.id}`);
-    this.view.showCustomer(customer);
-  }
+      this.view.say(`Customer created with id ${customer.id}`);
+      this.view.showCustomer(customer);
+    } catch {
+      this.view.say(`[ERROR]: Failed to create customer`);
+    }
+  };
 
   private update = async (): Promise<void> => {
     const input = await this.ask([
@@ -210,11 +226,15 @@ export class CustomerController extends Controller {
       return;
     }
 
-    const customer = await this.repository.update(id, truthyUpdates);
+    try {
+      const customer = await this.repository.update(id, truthyUpdates);
 
-    this.view.say(`Customer ${customer.id} updated successfully`);
-    this.view.showCustomer(customer);
-  }
+      this.view.say(`Customer ${customer.id} updated successfully`);
+      this.view.showCustomer(customer);
+    } catch {
+      this.view.say(`[ERROR]: Failed to update customer`);
+    }
+  };
 
   private createRandom = async (): Promise<void> => {
     const input = await this.ask({
@@ -234,16 +254,20 @@ export class CustomerController extends Controller {
 
     const { count } = input;
 
-    const result = await this.repository.createRandom(count);
+    try {
+      const result = await this.repository.createRandom(count);
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Created ${count} customers (page ${page}):`);
-        this.view.showCustomers(items);
-      },
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Created ${count} customers (page ${page}):`);
+          this.view.showCustomers(items);
+        },
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to create random customers`);
+    }
+  };
 
   private delete = async (): Promise<void> => {
     const input = await this.ask({
@@ -262,9 +286,13 @@ export class CustomerController extends Controller {
 
     const { id } = input;
 
-    const customer = await this.repository.delete(id);
+    try {
+      const customer = await this.repository.delete(id);
 
-    this.view.say(`Customer ${customer.id} deleted successfully`);
-    this.view.showCustomer(customer);
-  }
+      this.view.say(`Customer ${customer.id} deleted successfully`);
+      this.view.showCustomer(customer);
+    } catch {
+      this.view.say(`[ERROR]: Failed to delete customer`);
+    }
+  };
 }

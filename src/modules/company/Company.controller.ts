@@ -37,17 +37,21 @@ export class CompanyController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    const result = await this.repository.list();
+    try {
+      const result = await this.repository.list();
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Companies found (page ${page}):`);
-        this.view.showCompanies(items);
-      },
-      onEmptyPage: () => this.view.say('No companies found.'),
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Companies found (page ${page}):`);
+          this.view.showCompanies(items);
+        },
+        onEmptyPage: () => this.view.say('No companies found.'),
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to list companies`);
+    }
+  };
 
   private find = async (): Promise<void> => {
     const input = await this.ask({
@@ -66,16 +70,20 @@ export class CompanyController extends Controller {
 
     const { id } = input;
 
-    const company = await this.repository.findById(id);
+    try {
+      const company = await this.repository.findById(id);
 
-    if (!company) {
-      this.view.say(`Company with id ${id} not found.`);
+      if (!company) {
+        this.view.say(`Company with id ${id} not found.`);
 
-      return;
+        return;
+      }
+
+      this.view.showCompany(company);
+    } catch {
+      this.view.say(`[ERROR]: Failed to find company`);
     }
-
-    this.view.showCompany(company);
-  }
+  };
 
   private findCompaniesWithLargeCustomerBases = async (): Promise<void> => {
     const input = await this.ask({
@@ -94,18 +102,22 @@ export class CompanyController extends Controller {
 
     const { minClients } = input;
 
-    const result = await this.repository.findCompaniesWithLargeCustomerBases(minClients);
+    try {
+      const result = await this.repository.findCompaniesWithLargeCustomerBases(minClients);
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page, { elapsed }) => {
-        this.view.say(`Companies with at least ${minClients} customers (page ${page}):`);
-        this.view.showCompaniesWithCustomerCount(items);
-        this.view.say(`This page was retrieved in ${elapsed} ms.`);
-      },
-      onEmptyPage: () => this.view.say(`No companies with more than the ${minClients} of customers found.`),
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page, { elapsed }) => {
+          this.view.say(`Companies with at least ${minClients} customers (page ${page}):`);
+          this.view.showCompaniesWithCustomerCount(items);
+          this.view.say(`This page was retrieved in ${elapsed} ms.`);
+        },
+        onEmptyPage: () => this.view.say(`No companies with more than the ${minClients} of customers found.`),
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to find companies with large customer bases`);
+    }
+  };
 
   private create = async (): Promise<void> => {
     const input = await this.ask({
@@ -121,11 +133,15 @@ export class CompanyController extends Controller {
       return;
     }
 
-    const company = await this.repository.create(input);
+    try {
+      const company = await this.repository.create(input);
 
-    this.view.say(`Company created with id ${company.id}`);
-    this.view.showCompany(company);
-  }
+      this.view.say(`Company created with id ${company.id}`);
+      this.view.showCompany(company);
+    } catch {
+      this.view.say(`[ERROR]: Failed to create company`);
+    }
+  };
 
   private update = async (): Promise<void> => {
     const input = await this.ask([
@@ -159,11 +175,15 @@ export class CompanyController extends Controller {
       return;
     }
 
-    const company = await this.repository.update(id, truthyUpdates);
+    try {
+      const company = await this.repository.update(id, truthyUpdates);
 
-    this.view.say(`Company ${company.id} updated successfully`);
-    this.view.showCompany(company);
-  }
+      this.view.say(`Company ${company.id} updated successfully`);
+      this.view.showCompany(company);
+    } catch {
+      this.view.say(`[ERROR]: Failed to update company`);
+    }
+  };
 
   private createRandom = async (): Promise<void> => {
     const input = await this.ask({
@@ -183,16 +203,20 @@ export class CompanyController extends Controller {
 
     const { count } = input;
 
-    const result = await this.repository.createRandom(count);
+    try {
+      const result = await this.repository.createRandom(count);
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Created ${count} companies (page ${page}):`);
-        this.view.showCompanies(items);
-      },
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Created ${count} companies (page ${page}):`);
+          this.view.showCompanies(items);
+        },
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to create random companies`);
+    }
+  };
 
   private delete = async (): Promise<void> => {
     const input = await this.ask({
@@ -211,9 +235,13 @@ export class CompanyController extends Controller {
 
     const { id } = input;
 
-    const company = await this.repository.delete(id);
+    try {
+      const company = await this.repository.delete(id);
 
-    this.view.say(`Company ${company.id} deleted successfully`);
-    this.view.showCompany(company);
-  }
+      this.view.say(`Company ${company.id} deleted successfully`);
+      this.view.showCompany(company);
+    } catch {
+      this.view.say(`[ERROR]: Failed to delete company`);
+    }
+  };
 }

@@ -37,17 +37,21 @@ export class SalesManagerController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    const result = await this.repository.list();
+    try {
+      const result = await this.repository.list();
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Sales Managers (page ${page}):`);
-        this.view.showSalesManagers(items);
-      },
-      onEmptyPage: () => this.view.say('No sales managers found.'),
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Sales Managers (page ${page}):`);
+          this.view.showSalesManagers(items);
+        },
+        onEmptyPage: () => this.view.say('No sales managers found.'),
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to list sales managers`);
+    }
+  };
 
   private find = async (): Promise<void> => {
     const input = await this.ask({
@@ -66,16 +70,20 @@ export class SalesManagerController extends Controller {
 
     const { id } = input;
 
-    const salesManager = await this.repository.findById(id);
+    try {
+      const salesManager = await this.repository.findById(id);
 
-    if (!salesManager) {
-      this.view.say(`Sales manager with id ${id} not found.`);
+      if (!salesManager) {
+        this.view.say(`Sales manager with id ${id} not found.`);
 
-      return;
+        return;
+      }
+
+      this.view.showSalesManager(salesManager);
+    } catch {
+      this.view.say(`[ERROR]: Failed to find sales manager`);
     }
-
-    this.view.showSalesManager(salesManager);
-  }
+  };
 
   private findTopPerformersByCompanies = async (): Promise<void> => {
     const input = await this.ask([
@@ -143,22 +151,26 @@ export class SalesManagerController extends Controller {
       return;
     }
 
-    const result = await this.repository.findTopPerformersByCompanies({
-      companyIdRange: { from: companyIdRangeFrom, to: companyIdRangeTo },
-      timeframe: { from: dateRangeFrom, to: dateRangeTo },
-      targetConversionRate: targetConversionRate / 100,
-    });
+    try {
+      const result = await this.repository.findTopPerformersByCompanies({
+        companyIdRange: { from: companyIdRangeFrom, to: companyIdRangeTo },
+        timeframe: { from: dateRangeFrom, to: dateRangeTo },
+        targetConversionRate: targetConversionRate / 100,
+      });
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page, { elapsed }) => {
-        this.view.say(`Top performing sales managers (page ${page}):`);
-        this.view.showSalesManagerStats(items);
-        this.view.say(`This page was retrieved in ${elapsed} ms.`);
-      },
-      onEmptyPage: () => this.view.say('No sales managers found matching the criteria.'),
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page, { elapsed }) => {
+          this.view.say(`Top performing sales managers (page ${page}):`);
+          this.view.showSalesManagerStats(items);
+          this.view.say(`This page was retrieved in ${elapsed} ms.`);
+        },
+        onEmptyPage: () => this.view.say('No sales managers found matching the criteria.'),
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to find top performers`);
+    }
+  };
 
   private create = async (): Promise<void> => {
     const input = await this.ask([
@@ -188,11 +200,15 @@ export class SalesManagerController extends Controller {
       return;
     }
 
-    const salesManager = await this.repository.create(input);
+    try {
+      const salesManager = await this.repository.create(input);
 
-    this.view.say(`Sales manager created with id ${salesManager.id}`);
-    this.view.showSalesManager(salesManager);
-  }
+      this.view.say(`Sales manager created with id ${salesManager.id}`);
+      this.view.showSalesManager(salesManager);
+    } catch {
+      this.view.say(`[ERROR]: Failed to create sales manager`);
+    }
+  };
 
   private update = async (): Promise<void> => {
     const input = await this.ask([
@@ -236,11 +252,15 @@ export class SalesManagerController extends Controller {
       return;
     }
 
-    const salesManager = await this.repository.update(id, truthyUpdates);
+    try {
+      const salesManager = await this.repository.update(id, truthyUpdates);
 
-    this.view.say(`Sales manager ${salesManager.id} updated successfully`);
-    this.view.showSalesManager(salesManager);
-  }
+      this.view.say(`Sales manager ${salesManager.id} updated successfully`);
+      this.view.showSalesManager(salesManager);
+    } catch {
+      this.view.say(`[ERROR]: Failed to update sales manager`);
+    }
+  };
 
   private createRandom = async (): Promise<void> => {
     const input = await this.ask({
@@ -260,16 +280,20 @@ export class SalesManagerController extends Controller {
 
     const { count } = input;
 
-    const result = await this.repository.createRandom(count);
+    try {
+      const result = await this.repository.createRandom(count);
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Created ${count} sales managers (page ${page}):`);
-        this.view.showSalesManagers(items);
-      },
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Created ${count} sales managers (page ${page}):`);
+          this.view.showSalesManagers(items);
+        },
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to create random sales managers`);
+    }
+  };
 
   private delete = async (): Promise<void> => {
     const input = await this.ask({
@@ -288,9 +312,13 @@ export class SalesManagerController extends Controller {
 
     const { id } = input;
 
-    const salesManager = await this.repository.delete(id);
+    try {
+      const salesManager = await this.repository.delete(id);
 
-    this.view.say(`Sales manager ${salesManager.id} deleted successfully`);
-    this.view.showSalesManager(salesManager);
-  }
+      this.view.say(`Sales manager ${salesManager.id} deleted successfully`);
+      this.view.showSalesManager(salesManager);
+    } catch {
+      this.view.say(`[ERROR]: Failed to delete sales manager`);
+    }
+  };
 }

@@ -38,17 +38,21 @@ export class LeadController extends Controller {
   }
 
   private list = async (): Promise<void> => {
-    const result = await this.repository.list();
+    try {
+      const result = await this.repository.list();
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Leads found (page ${page}):`);
-        this.view.showLeads(items);
-      },
-      onEmptyPage: () => this.view.say('No leads found.'),
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Leads found (page ${page}):`);
+          this.view.showLeads(items);
+        },
+        onEmptyPage: () => this.view.say('No leads found.'),
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to list leads`);
+    }
+  };
 
   private find = async (): Promise<void> => {
     const input = await this.ask({
@@ -67,29 +71,37 @@ export class LeadController extends Controller {
 
     const { id } = input;
 
-    const lead = await this.repository.findById(id);
+    try {
+      const lead = await this.repository.findById(id);
 
-    if (!lead) {
-      this.view.say(`Lead with id ${id} not found.`);
+      if (!lead) {
+        this.view.say(`Lead with id ${id} not found.`);
 
-      return;
+        return;
+      }
+
+      this.view.showLead(lead);
+    } catch {
+      this.view.say(`[ERROR]: Failed to find lead`);
     }
-
-    this.view.showLead(lead);
-  }
+  };
 
   private assignLeads = async (): Promise<void> => {
-    const result = await this.repository.assignLeadsToSalesManagers();
+    try {
+      const result = await this.repository.assignLeadsToSalesManagers();
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Assigned leads to sales managers (page ${page}):`);
-        this.view.showAssignedLeads(items);
-      },
-      onEmptyPage: () => this.view.say('No unassigned leads found.'),
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Assigned leads to sales managers (page ${page}):`);
+          this.view.showAssignedLeads(items);
+        },
+        onEmptyPage: () => this.view.say('No unassigned leads found.'),
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to assign leads to sales managers`);
+    }
+  };
 
   private create = async (): Promise<void> => {
     const input = await this.ask([
@@ -126,11 +138,15 @@ export class LeadController extends Controller {
       return;
     }
 
-    const lead = await this.repository.create(input);
+    try {
+      const lead = await this.repository.create(input);
 
-    this.view.say(`Lead created with id ${lead.id}`);
-    this.view.showLead(lead);
-  }
+      this.view.say(`Lead created with id ${lead.id}`);
+      this.view.showLead(lead);
+    } catch {
+      this.view.say(`[ERROR]: Failed to create lead`);
+    }
+  };
 
   private update = async (): Promise<void> => {
     const input = await this.ask([
@@ -183,11 +199,15 @@ export class LeadController extends Controller {
       return;
     }
 
-    const lead = await this.repository.update(id, truthyUpdates);
+    try {
+      const lead = await this.repository.update(id, truthyUpdates);
 
-    this.view.say(`Lead ${lead.id} updated successfully`);
-    this.view.showLead(lead);
-  }
+      this.view.say(`Lead ${lead.id} updated successfully`);
+      this.view.showLead(lead);
+    } catch {
+      this.view.say(`[ERROR]: Failed to update lead`);
+    }
+  };
 
   private createRandom = async (): Promise<void> => {
     const input = await this.ask({
@@ -207,16 +227,20 @@ export class LeadController extends Controller {
 
     const { count } = input;
 
-    const result = await this.repository.createRandom(count);
+    try {
+      const result = await this.repository.createRandom(count);
 
-    await this.browsePages({
-      data: result,
-      onPage: (items, page) => {
-        this.view.say(`Created ${count} leads (page ${page}):`);
-        this.view.showLeads(items);
-      },
-    });
-  }
+      await this.browsePages({
+        data: result,
+        onPage: (items, page) => {
+          this.view.say(`Created ${count} leads (page ${page}):`);
+          this.view.showLeads(items);
+        },
+      });
+    } catch {
+      this.view.say(`[ERROR]: Failed to create random leads`);
+    }
+  };
 
   private delete = async (): Promise<void> => {
     const input = await this.ask({
@@ -235,9 +259,13 @@ export class LeadController extends Controller {
 
     const { id } = input;
 
-    const lead = await this.repository.delete(id);
+    try {
+      const lead = await this.repository.delete(id);
 
-    this.view.say(`Lead ${lead.id} deleted successfully`);
-    this.view.showLead(lead);
-  }
+      this.view.say(`Lead ${lead.id} deleted successfully`);
+      this.view.showLead(lead);
+    } catch {
+      this.view.say(`[ERROR]: Failed to delete lead`);
+    }
+  };
 }
