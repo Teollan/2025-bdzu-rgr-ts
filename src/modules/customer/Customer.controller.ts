@@ -115,6 +115,12 @@ export class CustomerController extends Controller {
 
     const { salesManagerNameLike, from, to } = input;
 
+    if (from > to) {
+      this.view.say(`Invalid date range: start [${from.toDateString()}] cannot be later than end [${to.toDateString()}].`);
+
+      return;
+    }
+
     try {
       const result = await this.model.findCustomersContactedBySalesManager({
         salesManagerNameLike,
