@@ -38,6 +38,7 @@ export class CompanyModel extends Model {
     return paginate(({ limit, offset }) => this.sql<Company[]>`
       SELECT *
       FROM companies
+      ORDER BY id ASC
       LIMIT ${limit}
       OFFSET ${offset}
     `);

@@ -45,7 +45,11 @@ export class CustomerModel extends Model {
 
   async list(): Promise<Page<Customer>> {
     return paginate(({ limit, offset }) => this.sql<Customer[]>`
-      SELECT * FROM customers LIMIT ${limit} OFFSET ${offset}
+      SELECT *
+      FROM customers
+      ORDER BY id ASC
+      LIMIT ${limit}
+      OFFSET ${offset}
     `);
   }
 

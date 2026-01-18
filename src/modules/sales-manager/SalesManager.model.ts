@@ -51,6 +51,7 @@ export class SalesManagerModel extends Model {
       SELECT *
       FROM raw_stats
       WHERE conversion_rate >= ${targetConversionRate}
+      ORDER BY conversion_rate DESC, leads_assigned DESC, leads_won DESC
       LIMIT ${limit}
       OFFSET ${offset}
     `, { middleware: withExecutionTime });
@@ -60,6 +61,7 @@ export class SalesManagerModel extends Model {
     return paginate(({ limit, offset }) => this.sql<SalesManager[]>`
       SELECT *
       FROM sales_managers
+      ORDER BY id ASC
       LIMIT ${limit}
       OFFSET ${offset}
     `);

@@ -67,6 +67,7 @@ export class LeadModel extends Model {
     return paginate(({ limit, offset }) => this.sql<Lead[]>`
       SELECT *
       FROM leads
+      ORDER BY id ASC
       LIMIT ${limit}
       OFFSET ${offset}
     `);
