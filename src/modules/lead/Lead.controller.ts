@@ -1,12 +1,17 @@
 import { Controller } from '@/core/controller/Controller';
-import { isMandatory } from '@/lib/validation';
+import { composeValidators, isForeignKey, isMandatory } from '@/lib/validation';
 import { LeadModel } from '@/modules/lead/Lead.model';
 import { LeadStatus } from '@/modules/lead/Lead.entity';
 import { LeadView } from '@/modules/lead/Lead.view';
 import { isEmpty, takeTruthy } from '@/lib/object';
+import { CompanyModel } from '@/modules/company/Company.model';
+import { CustomerModel } from '@/modules/customer/Customer.model';
 
 export class LeadController extends Controller {
-  private model = this.makeModel(LeadModel);
+  private leadModel = this.makeModel(LeadModel);
+  private companyModel = this.makeModel(CompanyModel);
+  private customerModel = this.makeModel(CustomerModel);
+
   private view = this.makeView(LeadView);
 
   public async run(): Promise<void> {
@@ -39,7 +44,7 @@ export class LeadController extends Controller {
 
   private list = async (): Promise<void> => {
     try {
-      const result = await this.model.list();
+      const result = await this.leadModel.list();
 
       await this.browsePages({
         data: result,
@@ -72,7 +77,7 @@ export class LeadController extends Controller {
     const { id } = input;
 
     try {
-      const lead = await this.model.findById(id);
+      const lead = await this.leadModel.findById(id);
 
       if (!lead) {
         this.view.say(`Lead with id ${id} not found.`);
@@ -88,7 +93,7 @@ export class LeadController extends Controller {
 
   private assignLeads = async (): Promise<void> => {
     try {
-      const result = await this.model.assignLeadsToSalesManagers();
+      const result = await this.leadModel.assignLeadsToSalesManagers();
 
       await this.browsePages({
         data: result,
@@ -110,14 +115,20 @@ export class LeadController extends Controller {
         type: 'number',
         message: 'Enter company ID:',
         min: 1,
-        validate: isMandatory('Company ID is required'),
+        validate: composeValidators(
+          isMandatory('Company ID is required'),
+          isForeignKey((id) => this.companyModel.findById(id), 'Company not found'),
+        ),
       },
       {
         name: 'customerId',
         type: 'number',
         message: 'Enter customer ID:',
         min: 1,
-        validate: isMandatory('Customer ID is required'),
+        validate: composeValidators(
+          isMandatory('Customer ID is required'),
+          isForeignKey((id) => this.customerModel.findById(id), 'Customer not found'),
+        ),
       },
       {
         name: 'status',
@@ -139,7 +150,7 @@ export class LeadController extends Controller {
     }
 
     try {
-      const lead = await this.model.create(input);
+      const lead = await this.leadModel.create(input);
 
       this.view.say(`Lead created with id ${lead.id}`);
       this.view.showLead(lead);
@@ -162,12 +173,14 @@ export class LeadController extends Controller {
         type: 'number',
         message: 'Enter new company ID (leave empty to skip):',
         min: 1,
+        validate: isForeignKey((id) => this.companyModel.findById(id), 'Company not found'),
       },
       {
         name: 'customerId',
         type: 'number',
         message: 'Enter new customer ID (leave empty to skip):',
         min: 1,
+        validate: isForeignKey((id) => this.customerModel.findById(id), 'Customer not found'),
       },
       {
         name: 'status',
@@ -200,7 +213,7 @@ export class LeadController extends Controller {
     }
 
     try {
-      const lead = await this.model.update(id, truthyUpdates);
+      const lead = await this.leadModel.update(id, truthyUpdates);
 
       this.view.say(`Lead ${lead.id} updated successfully`);
       this.view.showLead(lead);
@@ -228,7 +241,7 @@ export class LeadController extends Controller {
     const { count } = input;
 
     try {
-      const result = await this.model.createRandom(count);
+      const result = await this.leadModel.createRandom(count);
 
       await this.browsePages({
         data: result,
@@ -279,7 +292,7 @@ export class LeadController extends Controller {
     }
 
     try {
-      const lead = await this.model.delete(id);
+      const lead = await this.leadModel.delete(id);
 
       this.view.say(`Lead ${lead.id} deleted successfully`);
       this.view.showLead(lead);

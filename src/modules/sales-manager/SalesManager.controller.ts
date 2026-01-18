@@ -1,11 +1,14 @@
 import { Controller } from '@/core/controller/Controller';
-import { isMandatory } from '@/lib/validation';
+import { composeValidators, isForeignKey, isMandatory } from '@/lib/validation';
 import { isEmpty, takeTruthy } from '@/lib/object';
+import { CompanyModel } from '@/modules/company/Company.model';
 import { SalesManagerModel } from '@/modules/sales-manager/SalesManager.model';
 import { SalesManagerView } from '@/modules/sales-manager/SalesManager.view';
 
 export class SalesManagerController extends Controller {
-  private model = this.makeModel(SalesManagerModel);
+  private salesManagerModel = this.makeModel(SalesManagerModel);
+  private companyModel = this.makeModel(CompanyModel);
+  
   private view = this.makeView(SalesManagerView);
 
   public async run(): Promise<void> {
@@ -38,7 +41,7 @@ export class SalesManagerController extends Controller {
 
   private list = async (): Promise<void> => {
     try {
-      const result = await this.model.list();
+      const result = await this.salesManagerModel.list();
 
       await this.browsePages({
         data: result,
@@ -71,7 +74,7 @@ export class SalesManagerController extends Controller {
     const { id } = input;
 
     try {
-      const salesManager = await this.model.findById(id);
+      const salesManager = await this.salesManagerModel.findById(id);
 
       if (!salesManager) {
         this.view.say(`Sales manager with id ${id} not found.`);
@@ -152,7 +155,7 @@ export class SalesManagerController extends Controller {
     }
 
     try {
-      const result = await this.model.findTopPerformersByCompanies({
+      const result = await this.salesManagerModel.findTopPerformersByCompanies({
         companyIdRange: { from: companyIdRangeFrom, to: companyIdRangeTo },
         timeframe: { from: dateRangeFrom, to: dateRangeTo },
         targetConversionRate: targetConversionRate / 100,
@@ -178,7 +181,10 @@ export class SalesManagerController extends Controller {
         name: 'companyId',
         type: 'number',
         message: 'Enter company ID:',
-        validate: isMandatory('Company ID is required'),
+        validate: composeValidators(
+          isMandatory('Company ID is required'),
+          isForeignKey((id) => this.companyModel.findById(id), 'Company not found'),
+        ),
       },
       {
         name: 'firstName',
@@ -201,7 +207,7 @@ export class SalesManagerController extends Controller {
     }
 
     try {
-      const salesManager = await this.model.create(input);
+      const salesManager = await this.salesManagerModel.create(input);
 
       this.view.say(`Sales manager created with id ${salesManager.id}`);
       this.view.showSalesManager(salesManager);
@@ -223,6 +229,7 @@ export class SalesManagerController extends Controller {
         name: 'companyId',
         type: 'number',
         message: 'Enter new company ID (leave empty to skip):',
+        validate: isForeignKey((id) => this.companyModel.findById(id), 'Company not found'),
       },
       {
         name: 'firstName',
@@ -253,7 +260,7 @@ export class SalesManagerController extends Controller {
     }
 
     try {
-      const salesManager = await this.model.update(id, truthyUpdates);
+      const salesManager = await this.salesManagerModel.update(id, truthyUpdates);
 
       this.view.say(`Sales manager ${salesManager.id} updated successfully`);
       this.view.showSalesManager(salesManager);
@@ -281,7 +288,7 @@ export class SalesManagerController extends Controller {
     const { count } = input;
 
     try {
-      const result = await this.model.createRandom(count);
+      const result = await this.salesManagerModel.createRandom(count);
 
       await this.browsePages({
         data: result,
@@ -332,7 +339,7 @@ export class SalesManagerController extends Controller {
     }
 
     try {
-      const salesManager = await this.model.delete(id);
+      const salesManager = await this.salesManagerModel.delete(id);
 
       this.view.say(`Sales manager ${salesManager.id} deleted successfully`);
       this.view.showSalesManager(salesManager);
