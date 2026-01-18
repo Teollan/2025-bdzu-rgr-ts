@@ -1,5 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
-import { composeValidators, isEmail, isMandatory, isPhoneNumber } from '@/lib/validation';
+import { composeValidators, doesExist, isEmail, isMandatory, isPhoneNumber, isUnique } from '@/lib/validation';
 import { isEmpty, takeTruthy } from '@/lib/object';
 import { CustomerModel } from '@/modules/customer/Customer.model';
 import { CustomerView } from '@/modules/customer/Customer.view';
@@ -15,7 +15,9 @@ export class CustomerController extends Controller {
       message: 'Managing Customers. What would you like to do?',
       choices: [
         { title: 'List all', value: () => this.list() },
-        { title: 'Find by ID', value: () => this.find() },
+        { title: 'Find by ID', value: () => this.findById() },
+        { title: 'Find by Email', value: () => this.findByEmail() },
+        { title: 'Find by Phone Number', value: () => this.findByPhoneNumber() },
         { title: 'Find Customers Contacted by Sales Manager', value: () => this.findCustomersContactedBySalesManager() },
         { title: 'Create', value: () => this.create() },
         { title: 'Create Random', value: () => this.createRandom() },
@@ -53,7 +55,7 @@ export class CustomerController extends Controller {
     }
   };
 
-  private find = async (): Promise<void> => {
+  private findById = async (): Promise<void> => {
     const input = await this.ask({
       name: 'id',
       type: 'number',
@@ -75,6 +77,74 @@ export class CustomerController extends Controller {
 
       if (!customer) {
         this.view.say(`Customer with id ${id} not found.`);
+
+        return;
+      }
+
+      this.view.showCustomer(customer);
+    } catch {
+      this.view.say(`[ERROR]: Failed to find customer`);
+    }
+  };
+
+  private findByEmail = async (): Promise<void> => {
+    const input = await this.ask({
+      name: 'email',
+      type: 'text',
+      message: 'Enter customer email:',
+      validate: composeValidators(
+        isMandatory('Email is required'),
+        isEmail('Must be a valid email address'),
+      ),
+    });
+
+    if (!input) {
+      this.view.say('Search cancelled.');
+
+      return;
+    }
+
+    const { email } = input;
+
+    try {
+      const customer = await this.model.findByEmail(email);
+
+      if (!customer) {
+        this.view.say(`Customer with email "${email}" not found.`);
+
+        return;
+      }
+
+      this.view.showCustomer(customer);
+    } catch {
+      this.view.say(`[ERROR]: Failed to find customer`);
+    }
+  };
+
+  private findByPhoneNumber = async (): Promise<void> => {
+    const input = await this.ask({
+      name: 'phoneNumber',
+      type: 'text',
+      message: 'Enter customer phone number:',
+      validate: composeValidators(
+        isMandatory('Phone number is required'),
+        isPhoneNumber('Must be a valid phone number'),
+      ),
+    });
+
+    if (!input) {
+      this.view.say('Search cancelled.');
+
+      return;
+    }
+
+    const { phoneNumber } = input;
+
+    try {
+      const customer = await this.model.findByPhoneNumber(phoneNumber);
+
+      if (!customer) {
+        this.view.say(`Customer with phone number "${phoneNumber}" not found.`);
 
         return;
       }
@@ -162,6 +232,7 @@ export class CustomerController extends Controller {
         validate: composeValidators(
           isMandatory('Phone number is required'),
           isPhoneNumber('Must be a valid phone number'),
+          isUnique((phoneNumber) => this.model.findByPhoneNumber(phoneNumber), 'Phone number already in use'),
         ),
       },
       {
@@ -171,6 +242,7 @@ export class CustomerController extends Controller {
         validate: composeValidators(
           isMandatory('Email is required'),
           isEmail('Must be a valid email address'),
+          isUnique((email) => this.model.findByEmail(email), 'Email already in use'),
         ),
       },
     ]);
@@ -198,7 +270,10 @@ export class CustomerController extends Controller {
         type: 'number',
         message: 'Enter customer ID to update:',
         min: 1,
-        validate: isMandatory('Customer ID is required'),
+        validate: composeValidators(
+          isMandatory('Customer ID is required'),
+          doesExist((id) => this.model.findById(id), 'Customer not found'),
+        ),
       },
       {
         name: 'firstName',
@@ -289,7 +364,10 @@ export class CustomerController extends Controller {
       type: 'number',
       message: 'Enter customer ID to delete:',
       min: 1,
-      validate: isMandatory('Customer ID is required'),
+      validate: composeValidators(
+        isMandatory('Customer ID is required'),
+        doesExist((id) => this.model.findById(id), 'Customer not found'),
+      ),
     });
 
     if (!input) {

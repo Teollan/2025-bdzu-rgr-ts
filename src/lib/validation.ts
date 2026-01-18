@@ -66,21 +66,40 @@ export const isPhoneNumber = (
   };
 };
 
-export const isForeignKey = <T>(
-  findById: (id: number) => Promise<T | null>,
+export const doesExist = <T>(
+  findById: (id: T) => Promise<T | null>,
   message: string = 'Invalid foreign key value'
-): Validator<number> => {
-  return async (value: number) => {
+): AsyncValidator<T> => {
+  return async (value: T) => {
     if (!value) {
       return true;
     }
 
-    const record = await findById(value);
+    const exists = await findById(value);
 
-    if (!record) {
+    if (!exists) {
       return message;
     }
 
     return true;
   }
 };
+
+export const isUnique = <T>(
+  findByValue: (value: T) => Promise<unknown>,
+  message: string = 'This value must be unique'
+): AsyncValidator<T> => {
+  return async (value: T) => {
+    if (!value) {
+      return true;
+    }
+
+    const exists = await findByValue(value);
+
+    if (exists) {
+      return message;
+    }
+
+    return true;
+  }
+}

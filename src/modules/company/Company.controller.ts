@@ -1,6 +1,6 @@
 import { Controller } from '@/core/controller/Controller';
 import { isEmpty, takeTruthy } from '@/lib/object';
-import { isMandatory } from '@/lib/validation';
+import { composeValidators, doesExist, isMandatory } from '@/lib/validation';
 import { CompanyModel } from '@/modules/company/Company.model';
 import { CompanyView } from '@/modules/company/Company.view';
 
@@ -15,7 +15,7 @@ export class CompanyController extends Controller {
       message: 'Managing Companies. What would you like to do?',
       choices: [
         { title: 'List all', value: () => this.list() },
-        { title: 'Find by ID', value: () => this.find() },
+        { title: 'Find by ID', value: () => this.findById() },
         { title: 'Find Companies with Large Customer Bases', value: () => this.findCompaniesWithLargeCustomerBases() },
         { title: 'Create', value: () => this.create() },
         { title: 'Create Random', value: () => this.createRandom() },
@@ -53,7 +53,7 @@ export class CompanyController extends Controller {
     }
   };
 
-  private find = async (): Promise<void> => {
+  private findById = async (): Promise<void> => {
     const input = await this.ask({
       name: 'id',
       type: 'number',
@@ -150,7 +150,10 @@ export class CompanyController extends Controller {
         type: 'number',
         message: 'Enter company ID to update:',
         min: 1,
-        validate: isMandatory('Company ID is required'),
+        validate: composeValidators(
+          isMandatory('Company ID is required'),
+          doesExist((id) => this.model.findById(id), 'Company not found'),
+        ),
       },
       {
         name: 'name',
@@ -219,16 +222,16 @@ export class CompanyController extends Controller {
   };
 
   private delete = async (): Promise<void> => {
-    const input = await this.ask([
-      {
-        name: 'id',
-        type: 'number',
-        message: 'Enter company ID to delete:',
-        min: 1,
-        validate: isMandatory('Company ID is required'),
-      },
-      
-    ]);
+    const input = await this.ask({
+      name: 'id',
+      type: 'number',
+      message: 'Enter company ID to delete:',
+      min: 1,
+      validate: composeValidators(
+        isMandatory('Company ID is required'),
+        doesExist((id) => this.model.findById(id), 'Company not found'),
+      ),
+    });
 
     if (!input) {
       this.view.say('Company deletion cancelled.');

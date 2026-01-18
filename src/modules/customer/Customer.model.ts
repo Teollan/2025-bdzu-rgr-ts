@@ -21,6 +21,34 @@ export class CustomerModel extends Model {
     return result[0];
   }
 
+  async findByEmail(email: string): Promise<Customer | null> {
+    const result = await this.sql<Customer[]>`
+      SELECT *
+      FROM customers
+      WHERE email = ${normalizeEmail(email)}
+    `;
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    return result[0];
+  }
+
+  async findByPhoneNumber(phoneNumber: string): Promise<Customer | null> {
+    const result = await this.sql<Customer[]>`
+      SELECT *
+      FROM customers
+      WHERE phone_number = ${normalizePhoneNumber(phoneNumber)}
+    `;
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    return result[0];
+  }
+
   async findCustomersContactedBySalesManager({
     salesManagerNameLike,
     timeframe,

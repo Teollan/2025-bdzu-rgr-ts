@@ -1,5 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
-import { composeValidators, isForeignKey, isMandatory } from '@/lib/validation';
+import { composeValidators, doesExist, isMandatory } from '@/lib/validation';
 import { LeadModel } from '@/modules/lead/Lead.model';
 import { LeadStatus } from '@/modules/lead/Lead.entity';
 import { LeadView } from '@/modules/lead/Lead.view';
@@ -21,7 +21,7 @@ export class LeadController extends Controller {
       message: 'Managing Leads. What would you like to do?',
       choices: [
         { title: 'List all', value: () => this.list() },
-        { title: 'Find by ID', value: () => this.find() },
+        { title: 'Find by ID', value: () => this.findById() },
         { title: 'Assign Leads to Sales Managers', value: () => this.assignLeads() },
         { title: 'Create', value: () => this.create() },
         { title: 'Create Random', value: () => this.createRandom() },
@@ -59,7 +59,7 @@ export class LeadController extends Controller {
     }
   };
 
-  private find = async (): Promise<void> => {
+  private findById = async (): Promise<void> => {
     const input = await this.ask({
       name: 'id',
       type: 'number',
@@ -117,7 +117,7 @@ export class LeadController extends Controller {
         min: 1,
         validate: composeValidators(
           isMandatory('Company ID is required'),
-          isForeignKey((id) => this.companyModel.findById(id), 'Company not found'),
+          doesExist((id) => this.companyModel.findById(id), 'Company not found'),
         ),
       },
       {
@@ -127,7 +127,7 @@ export class LeadController extends Controller {
         min: 1,
         validate: composeValidators(
           isMandatory('Customer ID is required'),
-          isForeignKey((id) => this.customerModel.findById(id), 'Customer not found'),
+          doesExist((id) => this.customerModel.findById(id), 'Customer not found'),
         ),
       },
       {
@@ -166,21 +166,24 @@ export class LeadController extends Controller {
         type: 'number',
         message: 'Enter lead ID to update:',
         min: 1,
-        validate: isMandatory('Lead ID is required'),
+        validate: composeValidators(
+          isMandatory('Lead ID is required'),
+          doesExist((id) => this.leadModel.findById(id), 'Lead not found'),
+        ),
       },
       {
         name: 'companyId',
         type: 'number',
         message: 'Enter new company ID (leave empty to skip):',
         min: 1,
-        validate: isForeignKey((id) => this.companyModel.findById(id), 'Company not found'),
+        validate: doesExist((id) => this.companyModel.findById(id), 'Company not found'),
       },
       {
         name: 'customerId',
         type: 'number',
         message: 'Enter new customer ID (leave empty to skip):',
         min: 1,
-        validate: isForeignKey((id) => this.customerModel.findById(id), 'Customer not found'),
+        validate: doesExist((id) => this.customerModel.findById(id), 'Customer not found'),
       },
       {
         name: 'status',
@@ -261,7 +264,10 @@ export class LeadController extends Controller {
       type: 'number',
       message: 'Enter lead ID to delete:',
       min: 1,
-      validate: isMandatory('Lead ID is required'),
+      validate: composeValidators(
+        isMandatory('Lead ID is required'),
+        doesExist((id) => this.leadModel.findById(id), 'Lead not found'),
+      ),
     });
 
     if (!input) {

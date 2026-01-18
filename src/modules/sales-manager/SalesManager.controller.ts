@@ -1,5 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
-import { composeValidators, isForeignKey, isMandatory } from '@/lib/validation';
+import { composeValidators, doesExist, isMandatory } from '@/lib/validation';
 import { isEmpty, takeTruthy } from '@/lib/object';
 import { CompanyModel } from '@/modules/company/Company.model';
 import { SalesManagerModel } from '@/modules/sales-manager/SalesManager.model';
@@ -18,7 +18,7 @@ export class SalesManagerController extends Controller {
       message: 'Managing Sales Managers. What would you like to do?',
       choices: [
         { title: 'List all', value: () => this.list() },
-        { title: 'Find by ID', value: () => this.find() },
+        { title: 'Find by ID', value: () => this.findById() },
         { title: 'Find Top Performers by Companies', value: () => this.findTopPerformersByCompanies() },
         { title: 'Create', value: () => this.create() },
         { title: 'Create Random', value: () => this.createRandom() },
@@ -56,7 +56,7 @@ export class SalesManagerController extends Controller {
     }
   };
 
-  private find = async (): Promise<void> => {
+  private findById = async (): Promise<void> => {
     const input = await this.ask({
       name: 'id',
       type: 'number',
@@ -183,7 +183,7 @@ export class SalesManagerController extends Controller {
         message: 'Enter company ID:',
         validate: composeValidators(
           isMandatory('Company ID is required'),
-          isForeignKey((id) => this.companyModel.findById(id), 'Company not found'),
+          doesExist((id) => this.companyModel.findById(id), 'Company not found'),
         ),
       },
       {
@@ -223,13 +223,16 @@ export class SalesManagerController extends Controller {
         type: 'number',
         message: 'Enter sales manager ID to update:',
         min: 1,
-        validate: isMandatory('Sales manager ID is required'),
+        validate: composeValidators(
+          isMandatory('Sales manager ID is required'),
+          doesExist((id) => this.salesManagerModel.findById(id), 'Sales manager not found'),
+        ),
       },
       {
         name: 'companyId',
         type: 'number',
         message: 'Enter new company ID (leave empty to skip):',
-        validate: isForeignKey((id) => this.companyModel.findById(id), 'Company not found'),
+        validate: doesExist((id) => this.companyModel.findById(id), 'Company not found'),
       },
       {
         name: 'firstName',
@@ -308,7 +311,10 @@ export class SalesManagerController extends Controller {
       type: 'number',
       message: 'Enter sales manager ID to delete:',
       min: 1,
-      validate: isMandatory('Sales manager ID is required'),
+      validate: composeValidators(
+        isMandatory('Sales manager ID is required'),
+        doesExist((id) => this.salesManagerModel.findById(id), 'Sales manager not found'),
+      ),
     });
 
     if (!input) {
