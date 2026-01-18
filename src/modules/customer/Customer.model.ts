@@ -1,5 +1,6 @@
 import { Model } from "@/core/model/Model";
 import { paginate, Page, paginateInMemory } from "@/lib/pagination";
+import { normalizePhoneNumber } from "@/lib/phone";
 import { withExecutionTime, WithExecutionTime } from "@/lib/stopwatch";
 import { Range } from '@/lib/range';
 import { CreateCustomerFields, Customer, UpdateCustomerFields } from "@/modules/customer/Customer.entity";
@@ -56,7 +57,7 @@ export class CustomerModel extends Model {
   }: CreateCustomerFields): Promise<Customer> {
     const result = await this.sql<Customer[]>`
       INSERT INTO customers (first_name, last_name, phone_number, email)
-      VALUES (${firstName}, ${lastName}, ${phoneNumber}, ${email})
+      VALUES (${firstName}, ${lastName}, ${normalizePhoneNumber(phoneNumber)}, ${email})
       RETURNING *
     `;
 
@@ -114,9 +115,14 @@ export class CustomerModel extends Model {
     id: number,
     fields: UpdateCustomerFields,
   ): Promise<Customer> {
+    const normalizedFields = {
+      ...fields,
+      ...(fields.phoneNumber && { phoneNumber: normalizePhoneNumber(fields.phoneNumber) }),
+    };
+
     const result = await this.sql<Customer[]>`
       UPDATE customers
-      SET ${this.sql(fields)}
+      SET ${this.sql(normalizedFields)}
       WHERE id = ${id}
       RETURNING *
     `;

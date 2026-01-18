@@ -1,5 +1,5 @@
 import { Controller } from '@/core/controller/Controller';
-import { isMandatory } from '@/lib/validation';
+import { composeValidators, isEmail, isMandatory, isPhoneNumber } from '@/lib/validation';
 import { isEmpty, takeTruthy } from '@/lib/object';
 import { CustomerModel } from '@/modules/customer/Customer.model';
 import { CustomerView } from '@/modules/customer/Customer.view';
@@ -153,13 +153,19 @@ export class CustomerController extends Controller {
         name: 'phoneNumber',
         type: 'text',
         message: 'Enter phone number:',
-        validate: isMandatory('Phone number is required'),
+        validate: composeValidators(
+          isMandatory('Phone number is required'),
+          isPhoneNumber('Must be a valid phone number'),
+        ),
       },
       {
         name: 'email',
         type: 'text',
         message: 'Enter email:',
-        validate: isMandatory('Email is required'),
+        validate: composeValidators(
+          isMandatory('Email is required'),
+          isEmail('Must be a valid email address'),
+        ),
       },
     ]);
 
@@ -202,11 +208,13 @@ export class CustomerController extends Controller {
         name: 'phoneNumber',
         type: 'text',
         message: 'Enter new phone number (leave empty to skip):',
+        validate: isPhoneNumber('Must be a valid phone number'),
       },
       {
         name: 'email',
         type: 'text',
         message: 'Enter new email (leave empty to skip):',
+        validate: isEmail('Must be a valid email address'),
       },
     ]);
 
