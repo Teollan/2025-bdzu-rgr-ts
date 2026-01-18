@@ -1,4 +1,5 @@
 import { Environment } from '@/core/environment';
+import { formatSql } from '@/lib/format';
 import postgres, { type Sql } from "postgres";
 
 export class Postgres {
@@ -20,7 +21,7 @@ export class Postgres {
         Environment.isDebugMode
           ? (_, query, params) => {
             console.debug('[DEBUG] SQL');
-            console.debug('QUERY:', query.replace(/\s+/g, ' ').trim());
+            console.debug(formatSql(query));
             console.debug('Parameters:', params);
           }
           : undefined
