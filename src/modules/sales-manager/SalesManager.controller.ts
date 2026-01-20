@@ -325,32 +325,13 @@ export class SalesManagerController extends Controller {
 
     const { id } = input;
 
-    this.view.say(`You are about to delete a Sales Manager with ID = ${id}.`);
-    this.view.say('Deleting a Sales Manager will also delete all related Lead assignments.');
-    this.view.say('This action cannot be undone!');
-
-    const confirmation = await this.ask({
-      name: 'confirm',
-      type: 'toggle',
-      message: 'Are you sure you want to proceed?',
-      initial: false,
-      active: 'yes',
-      inactive: 'no',
-    });
-
-    if (!confirmation || !confirmation.confirm) {
-      this.view.say('Sales manager deletion cancelled.');
-
-      return;
-    }
-
     try {
       const salesManager = await this.salesManagerModel.delete(id);
 
       this.view.say(`Sales manager ${salesManager.id} deleted successfully`);
       this.view.showSalesManager(salesManager);
     } catch {
-      this.view.say(`[ERROR]: Failed to delete sales manager`);
+      this.view.say(`[ERROR]: Failed to delete sales manager. Cannot delete sales manager with connected Lead assignments.`);
     }
   };
 }

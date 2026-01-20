@@ -278,32 +278,13 @@ export class LeadController extends Controller {
 
     const { id } = input;
 
-    this.view.say(`You are about to delete a Lead with ID = ${id}.`);
-    this.view.say('Deleting a Lead will also delete all related Sales Manager assignments.');
-    this.view.say('This action cannot be undone!');
-
-    const confirmation = await this.ask({
-      name: 'confirm',
-      type: 'toggle',
-      message: 'Are you sure you want to proceed?',
-      initial: false,
-      active: 'yes',
-      inactive: 'no',
-    });
-
-    if (!confirmation || !confirmation.confirm) {
-      this.view.say('Lead deletion cancelled.');
-
-      return;
-    }
-
     try {
       const lead = await this.leadModel.delete(id);
 
       this.view.say(`Lead ${lead.id} deleted successfully`);
       this.view.showLead(lead);
     } catch {
-      this.view.say(`[ERROR]: Failed to delete lead`);
+      this.view.say(`[ERROR]: Failed to delete lead. Cannot delete lead with connected Sales Manager assignments.`);
     }
   };
 }

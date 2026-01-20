@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS companies (
 -- Create Sales Managers table
 CREATE TABLE IF NOT EXISTS sales_managers (
     id SERIAL PRIMARY KEY,
-    company_id INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    company_id INT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL
 );
@@ -32,16 +32,16 @@ CREATE TABLE IF NOT EXISTS customers (
 -- Create Leads table
 CREATE TABLE IF NOT EXISTS leads (
     id SERIAL PRIMARY KEY,
-    company_id INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-    customer_id INT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    company_id INT NOT NULL REFERENCES companies(id) ON DELETE RESTRICT,
+    customer_id INT NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
     status LEAD_STATUS DEFAULT 'PENDING' NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
 -- Create Sales Manager Leads table
 CREATE TABLE IF NOT EXISTS sales_manager_leads (
-    sales_manager_id INT NOT NULL REFERENCES sales_managers(id) ON DELETE CASCADE,
-    lead_id INT NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+    sales_manager_id INT NOT NULL REFERENCES sales_managers(id) ON DELETE RESTRICT,
+    lead_id INT NOT NULL REFERENCES leads(id) ON DELETE RESTRICT,
     PRIMARY KEY (sales_manager_id, lead_id)
 );
 

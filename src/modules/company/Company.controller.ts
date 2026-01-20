@@ -241,32 +241,13 @@ export class CompanyController extends Controller {
 
     const { id } = input;
 
-    this.view.say(`You are about to delete a Company with ID = ${id}.`);
-    this.view.say('Deleting a Company will also delete all related Sales Managers and Leads.');
-    this.view.say('This action cannot be undone!');
-
-    const confirmation = await this.ask({
-      name: 'confirm',
-      type: 'toggle',
-      message: `Are you sure you want to proceed?`,
-      initial: false,
-      active: 'yes',
-      inactive: 'no',
-    });
-
-    if (!confirmation || !confirmation.confirm) {
-      this.view.say('Company deletion cancelled.');
-
-      return;
-    }
-
     try {
       const company = await this.model.delete(id);
 
       this.view.say(`Company ${company.id} deleted successfully`);
       this.view.showCompany(company);
     } catch {
-      this.view.say(`[ERROR]: Failed to delete company`);
+      this.view.say(`[ERROR]: Failed to delete company. Cannot delete company with connected Sales Managers or Leads.`);
     }
   };
 }

@@ -378,32 +378,13 @@ export class CustomerController extends Controller {
 
     const { id } = input;
 
-    this.view.say(`You are about to delete a Customer with ID = ${id}.`);
-    this.view.say('Deleting a Customer will also delete all related Leads.');
-    this.view.say('This action cannot be undone!');
-
-    const confirmation = await this.ask({
-      name: 'confirm',
-      type: 'toggle',
-      message: 'Are you sure you want to proceed?',
-      initial: false,
-      active: 'yes',
-      inactive: 'no',
-    });
-
-    if (!confirmation || !confirmation.confirm) {
-      this.view.say('Customer deletion cancelled.');
-
-      return;
-    }
-
     try {
       const customer = await this.model.delete(id);
 
       this.view.say(`Customer ${customer.id} deleted successfully`);
       this.view.showCustomer(customer);
     } catch {
-      this.view.say(`[ERROR]: Failed to delete customer`);
+      this.view.say(`[ERROR]: Failed to delete customer. Cannot delete customer with connected Leads.`);
     }
   };
 }
